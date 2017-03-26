@@ -1,0 +1,41 @@
+body {
+    padding: 0;
+    margin: 0;
+}
+
+.field {
+    position: relative;
+    margin: 15px;
+}
+
+.tile {
+    box-sizing: border-box;
+    position: absolute;
+    transition: transform 0.3s;
+}
+
+.tile.wall {
+    background-color: slategray;
+    border-radius: 10px;
+    /*top: -3px;
+    left: -3px;*/
+    border: 4px solid black;
+    box-shadow: 3px 3px 5px darkgrey
+}
+
+.tile.robot {
+    /*border: 1px solid red;*/
+}
+.tile.robot:before {
+    position: absolute;
+    content: '\1F60E';
+    display: block;
+    left: 1px;
+    width: 100%;
+    height: 100%;
+    line-height: 50px;
+    font-size: 50px;
+    text-align: center;
+    vertical-align: bottom;
+    transform: rotate(-90deg);
+}
