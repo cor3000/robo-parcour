@@ -25,7 +25,8 @@ const fieldModel = {
             dir: 3
         }
     ],
-    tiles: ['empty','wall', 'pit']
+    tiles: ['empty','wall', 'pit'],
+    commands: ['forward1', 'forward2', 'forward3', 'left', 'right', 'uturn']
 }
 
 function div(id) {
@@ -65,6 +66,13 @@ function div(id) {
             return ops;
         },
 
+        clear: () => {
+            while (elem.hasChildNodes()) {
+                elem.removeChild(elem.lastChild);
+            }
+            return ops;
+        },
+
         get: () => elem
     }
     return ops;
@@ -74,8 +82,8 @@ function tile(id, x, y, tileClass) {
     return div(id).size(50, 50).atPos(x * 50, y * 50).withClass(`tile ${tileClass}`);
 }
 
-function renderRobot(robot) {
-    tile(robot.id, robot.x, robot.y, 'robot').rot(robot.dir * 90).appendTo(fieldElem);
+function renderRobot(model, robot) {
+    tile(robot.id, robot.x, robot.y, 'robot').rot(robot.dir * 90).appendTo(model.fieldElem);
 }
 
 function renderField(model, fieldElem) {
@@ -84,12 +92,45 @@ function renderField(model, fieldElem) {
             tile(`tile${row}_${col}`, col, row, model.tiles[tileId]).appendTo(fieldElem);
         });
     });
-    renderRobot(model.robots[0]);
-    renderRobot(model.robots[1]);
+    model.robots.forEach(robot => renderRobot(model, robot));
 }
 
-const fieldElem = div().withClass('field').appendTo(document.body).get();
-renderField(fieldModel, fieldElem);
+function initField(model) {
+    const fieldElem = div('field').withClass('field').appendTo(document.body).get();
+    model.fieldElem = fieldElem;
+    renderField(model, fieldElem);
+}
+
+function initCommands(model, robot) {
+    model.commandsElem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
+    robot.selectedCommandsElem = div(`${robot.id}-selected`).withClass(`selected`).appendTo(model.commandsElem).clear().get();
+    robot.availableCommandsElem = div(`${robot.id}-available`).withClass(`available`).appendTo(model.commandsElem).clear().get();
+}
+
+function renderCommands(model, robot) {
+    const availableCommandsElem = div(robot.availableCommandsElem.id).clear().get();
+    const selectedCommandsElem = div(robot.selectedCommandsElem.id).clear().get();
+
+    robot.availableCommands.forEach((command, index) => {
+        const cmdElem = div(`${robot.id}-command-available-${index}`).withClass(`command ${command}`).withText(command).appendTo(availableCommandsElem).get();
+        cmdElem.addEventListener('click', () => {
+            if(robot.selectedCommands.length < 5) {
+                robot.availableCommands.splice(index, 1);
+                robot.selectedCommands.push(command);
+                renderCommands(model, robot);
+            }
+        });
+    });
+    robot.selectedCommands.forEach((command, index) => {
+        const cmdElem = div(`${robot.id}-command-selected-${index}`).withClass(`command ${command}`).withText(command).appendTo(selectedCommandsElem).get();
+        cmdElem.addEventListener('click', () => {
+            robot.selectedCommands.splice(index, 1);
+            robot.availableCommands.push(command);
+            renderCommands(model, robot);
+        });
+    });
+}
+
 
 function dir2Vec(dir) {
     return {
@@ -113,12 +154,12 @@ function move(model, robot, dir, speed) {
             robot.y = newY;
         }
     }
-    renderRobot(robot);
+    renderRobot(model, robot);
 }
 
 function turn(model, robot, speed) {
     robot.dir += speed;
-    renderRobot(robot);
+    renderRobot(model, robot);
 }
 
 function walk(model, robot, speed) {
@@ -137,3 +178,47 @@ function robotCommands(model, robot) {
     };
 }
 
+function randomOf(array, count) {
+    const result = [];
+    for(let i = 0; i < count; i++) {
+        result.push(array[Math.floor(Math.random() * array.length)]);
+    }
+    return result;
+}
+
+function nextRound(model) {
+    fieldModel.robots.forEach(robot => {
+        robot.availableCommands = randomOf(model.commands, 10);
+        robot.selectedCommands = [];
+        robot.commandInterface = robotCommands(model, robot);
+
+        renderCommands(fieldModel, robot);
+    });
+}
+
+initField(fieldModel);
+fieldModel.robots.forEach(robot => {
+    initCommands(fieldModel, robot);
+});
+nextRound(fieldModel);
+
+function executeProgramm(model) {
+    let done = true;
+    fieldModel.robots.forEach(robot => {
+        const command = robot.selectedCommands.shift();
+        renderCommands(model, robot);
+        if(command) {
+            done = false;
+            robot.commandInterface[command]();
+        };
+    });
+
+    if(done) {
+        nextRound(fieldModel);        
+    } else {
+        setTimeout(() => executeProgramm(model), 1000);
+    }
+}
+
+const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
+executeBtn.addEventListener('click', () => executeProgramm(fieldModel));

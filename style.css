@@ -45,3 +45,23 @@ body {
 .tile#robot4 {
     background-image: url('img/robot_4.png');
 }
+
+.robotCommands {
+    width: 50%;
+    display: inline-block;
+}
+
+.robotCommands .available {
+    color: grey;
+    cursor: pointer;
+}
+.robotCommands .selected {
+    color: white;
+    cursor: pointer;
+}
+
+.execute {
+    color: yellow;
+    cursor: pointer;
+    text-align: center;
+}
