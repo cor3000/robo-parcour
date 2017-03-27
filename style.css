@@ -16,7 +16,6 @@ body {
 .tile {
     box-sizing: border-box;
     position: absolute;
-    transition: transform 0.3s;
 }
 
 .tile.pit {

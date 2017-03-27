@@ -26,7 +26,7 @@ const fieldModel = {
         }
     ],
     tiles: ['empty','wall', 'pit'],
-    commands: ['forward1', 'forward2', 'forward3', 'left', 'right', 'uturn']
+    commands: ['forward1', 'forward2', 'forward3', 'left', 'right', 'uturn', 'back1']
 }
 
 function div(id) {
@@ -42,27 +42,35 @@ function div(id) {
             return ops;
         },
         atPos: (x, y) => {
-            elem.style.transform = `translate(${x}px, ${y}px)`;
+            TweenLite.to(elem, 0.5, {x:x, y:y});
+            //elem.style.transform = `translate(${x}px, ${y}px)`;
             return ops;
         },
 
         rot: (angle) => {
-            elem.style.transform += ` rotate(${angle}deg)`;
+            TweenLite.to(elem, 0.5, {rotation:angle})            
+            //elem.style.transform += ` rotate(${angle}deg)`;
             return ops;
         },
 
         withClass: (cls) => {
-            elem.setAttribute('class', cls);
+            if(elem.getAttribute('class') !== cls) {
+                elem.setAttribute('class', cls);
+            }
             return ops;
         },
 
         withText: text => {
-            elem.innerText = text;
+            if(text !== elem.innerText) {
+                elem.innerText = text;
+            }
             return ops;
         },
 
         appendTo: (parent) => {
-            parent.appendChild(elem);
+            if(parent !== elem.parent) {
+                parent.appendChild(elem);
+            }
             return ops;
         },
 
