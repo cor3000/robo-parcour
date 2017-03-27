@@ -1,21 +1,31 @@
 const fieldModel = {
     tileData : [
-        [1,1,1,1,1,1,0,1],
+        [1,1,1,1,1,1,1,1],
         [1,0,0,0,0,0,0,1],
-        [1,0,0,1,0,1,1,1],
-        [1,0,0,1,0,0,0,1],
-        [1,1,1,1,0,0,0,1],
+        [1,0,2,0,0,2,0,1],
+        [1,0,1,0,0,1,0,1],
         [1,0,0,0,0,0,0,1],
-        [1,0,1,0,0,0,0,1],
-        [1,0,1,1,1,1,1,1]
+        [1,0,0,1,1,0,0,1],
+        [1,0,0,0,0,0,0,1],
+        [1,1,1,1,1,1,1,1]
     ], 
-    robot : {
-        id: 'robo1',
-        x: 1, 
-        y: 7,
-        dir: 1
-    },
-    tiles: ['empty', 'wall'],
+    items : [
+    
+    ],
+    robots : [
+        {
+            id: 'robot1',
+            x: 2, 
+            y: 6,
+            dir: 3
+        }, {
+            id: 'robot2',
+            x: 5, 
+            y: 6,
+            dir: 3
+        }
+    ],
+    tiles: ['empty','wall', 'pit']
 }
 
 function div(id) {
@@ -74,7 +84,8 @@ function renderField(model, fieldElem) {
             tile(`tile${row}_${col}`, col, row, model.tiles[tileId]).appendTo(fieldElem);
         });
     });
-    renderRobot(model.robot);
+    renderRobot(model.robots[0]);
+    renderRobot(model.robots[1]);
 }
 
 const fieldElem = div().withClass('field').appendTo(document.body).get();
@@ -102,12 +113,12 @@ function move(model, robot, dir, speed) {
             robot.y = newY;
         }
     }
-    renderRobot(fieldModel.robot);
+    renderRobot(robot);
 }
 
 function turn(model, robot, speed) {
     robot.dir += speed;
-    renderRobot(fieldModel.robot);
+    renderRobot(robot);
 }
 
 function walk(model, robot, speed) {
