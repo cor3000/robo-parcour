@@ -29,18 +29,6 @@ const fieldModel = {
     commands: ['forward1', 'forward2', 'forward3', 'left', 'right', 'uturn', 'back1']
 }
 
-function initField(model) {
-    const fieldElem = div('field').withClass('field').appendTo(document.body).get();
-    model.fieldElem = fieldElem;
-}
-
-function initCommands(model, robot) {
-    model.commandsElem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
-    robot.selectedCommandsElem = div(`${robot.id}-selected`).withClass(`selected`).appendTo(model.commandsElem).clear().get();
-    robot.availableCommandsElem = div(`${robot.id}-available`).withClass(`available`).appendTo(model.commandsElem).clear().get();
-}
-
-
 function dir2Vec(dir) {
     return {
         x: Math.cos(dir * Math.PI / 2), 
@@ -97,11 +85,14 @@ function randomOf(array, count) {
 
 function nextRound(model) {
     fieldModel.robots.forEach(robot => {
-        robot.availableCommands = randomOf(model.commands, 10);
+        robot.availableCommands = randomOf(model.commands, 10)
+            .map(command => {return {
+                command, 
+                prio: Math.random()
+             }});
         robot.selectedCommands = [];
         robot.commandInterface = robotCommands(model, robot);
-
-        renderCommands(fieldModel, robot);
+        renderCommands(fieldModel, robot, selectCommand, unselectCommand);
     });
 }
 
@@ -113,14 +104,28 @@ fieldModel.robots.forEach(robot => {
 });
 nextRound(fieldModel);
 
+function selectCommand(robot, command, index) {
+    if(robot.selectedCommands.length < 5) {
+        robot.availableCommands.splice(index, 1);
+        robot.selectedCommands.push(command);
+        renderCommands(fieldModel, robot, selectCommand, unselectCommand);
+    }
+}
+
+function unselectCommand(robot, command, index) {
+    robot.selectedCommands.splice(index, 1);
+    robot.availableCommands.unshift(command);
+    renderCommands(fieldModel, robot, selectCommand, unselectCommand);
+}
+
 function executeProgramm(model) {
     let done = true;
     fieldModel.robots.forEach(robot => {
         const command = robot.selectedCommands.shift();
-        renderCommands(model, robot);
+        renderCommands(model, robot, selectCommand, unselectCommand);
         if(command) {
             done = false;
-            robot.commandInterface[command]();
+            robot.commandInterface[command.command]();
         };
     });
 

@@ -36,6 +36,13 @@ function div(id) {
             return ops;
         },
 
+        attr: (attr, value) => {
+            if(value !== elem.getAttribute(attr)) {
+                elem.setAttribute(attr, value);
+            }
+            return ops;
+        },
+
         appendTo: (parent) => {
             if(parent !== elem.parent) {
                 parent.appendChild(elem);
@@ -59,6 +66,22 @@ function tile(id, x, y, tileClass) {
     return div(id).size(50, 50).atPos(x * 50, y * 50).withClass(`tile ${tileClass}`);
 }
 
+function commandCard(id, status, command) {
+    return div(id)
+        .withClass(`command ${command.command} ${status}`)
+        //.withText(`${command.command} (${Math.round(command.prio * 100)})`)
+        .attr('data-prio', command.prio);
+}
+
+function initField(model) {
+    const fieldElem = div('field').withClass('field').appendTo(document.body).get();
+    model.fieldElem = fieldElem;
+}
+
+function initCommands(model, robot) {
+    robot.commandsElem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
+}
+
 function renderRobot(model, robot) {
     tile(robot.id, robot.x, robot.y, 'robot').rot(robot.dir * 90).appendTo(model.fieldElem);
 }
@@ -72,26 +95,17 @@ function renderField(model) {
     model.robots.forEach(robot => renderRobot(model, robot));
 }
 
-function renderCommands(model, robot) {
-    const availableCommandsElem = div(robot.availableCommandsElem.id).clear().get();
-    const selectedCommandsElem = div(robot.selectedCommandsElem.id).clear().get();
+function renderCommands(model, robot, onSelect, onUnselect) {
+    const commandsElem = div(robot.commandsElem.id).clear().get();
 
-    robot.availableCommands.forEach((command, index) => {
-        const cmdElem = div(`${robot.id}-command-available-${index}`).withClass(`command ${command}`).withText(command).appendTo(availableCommandsElem).get();
-        cmdElem.addEventListener('click', () => {
-            if(robot.selectedCommands.length < 5) {
-                robot.availableCommands.splice(index, 1);
-                robot.selectedCommands.push(command);
-                renderCommands(model, robot);
-            }
-        });
-    });
     robot.selectedCommands.forEach((command, index) => {
-        const cmdElem = div(`${robot.id}-command-selected-${index}`).withClass(`command ${command}`).withText(command).appendTo(selectedCommandsElem).get();
-        cmdElem.addEventListener('click', () => {
-            robot.selectedCommands.splice(index, 1);
-            robot.availableCommands.unshift(command);
-            renderCommands(model, robot);
-        });
+        const commandElem = commandCard(`${robot.id}-command-selected-${index}`, 'selected', command)
+            .appendTo(commandsElem).get();
+        commandElem.addEventListener('click', () => onUnselect(robot, command, index));
+    });
+    robot.availableCommands.forEach((command, index) => {
+        const commandElem = commandCard(`${robot.id}-command-available-${index}`, 'available', command)
+            .appendTo(commandsElem).get();
+        commandElem.addEventListener('click', () => onSelect(robot, command, index));
     });
 }

@@ -50,13 +50,52 @@ body {
     display: inline-block;
 }
 
-.robotCommands .available {
-    color: grey;
+.robotCommands .command {
+    position: relative;
+    box-sizing: border-box;
+    display: inline-block;
+    width: 20%;
+    height: 60px;
+    border-radius: 5px;
+    border: 1px solid black;
+}
+
+.robotCommands .command.available {
+    background-color: grey;
     cursor: pointer;
 }
-.robotCommands .selected {
+
+.robotCommands .command.selected {
+    background-color: Silver;
     color: white;
     cursor: pointer;
+}
+
+.robotCommands .command:before {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    text-align: center;
+    font-size: 40px;
+}
+
+.robotCommands .command.forward1:before { content: '↑'; }
+.robotCommands .command.forward2:before { content: '⇈'; }
+.robotCommands .command.forward3:before { content: '⇶'; transform: translate(-2px, 0) rotate(-90deg)}
+.robotCommands .command.back1:before { content: '↓'; }
+.robotCommands .command.left:before { content: '↰'; }
+.robotCommands .command.right:before { content: '↱'; }
+.robotCommands .command.uturn:before { content: '↷'; }
+
+.robotCommands .command:after {
+    content: ' ';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    text-align: center;
+    height: 5px;
+    bottom: 5px;
+    background-color: black;
 }
 
 .execute {
