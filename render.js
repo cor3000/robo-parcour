@@ -70,7 +70,7 @@ function commandCard(id, status, command) {
     return div(id)
         .withClass(`command ${command.command} ${status}`)
         //.withText(`${command.command} (${Math.round(command.prio * 100)})`)
-        .attr('data-prio', command.prio);
+        .attr('data-prio', Math.round(command.prio * 1000));
 }
 
 function initField(model) {
