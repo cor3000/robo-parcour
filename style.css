@@ -7,7 +7,7 @@ body {
 .field {
     position: relative;
     margin: 15px;
-    width: 400px;
+    width: 550px;
     height: 400px;
     background-image: url('img/metal_floor.jpg');
     background-size: 12.5%;
@@ -70,6 +70,7 @@ body {
     background-color: Silver;
     color: white;
     cursor: pointer;
+    color: Green;
 }
 
 .robotCommands .command:before {

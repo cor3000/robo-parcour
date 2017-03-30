@@ -1,3 +1,5 @@
+const tileSize = 50;
+
 function div(id) {
     let elem = document.getElementById(id);
     if(!elem) {
@@ -63,13 +65,12 @@ function div(id) {
 }
 
 function tile(id, x, y, tileClass) {
-    return div(id).size(50, 50).atPos(x * 50, y * 50).withClass(`tile ${tileClass}`);
+    return div(id).size(tileSize, tileSize).atPos(x * tileSize, y * tileSize).withClass(`tile ${tileClass}`);
 }
 
 function commandCard(id, status, command) {
     return div(id)
         .withClass(`command ${command.command} ${status}`)
-        //.withText(`${command.command} (${Math.round(command.prio * 100)})`)
         .attr('data-prio', Math.round(command.prio * 1000));
 }
 
@@ -84,6 +85,16 @@ function initCommands(model, robot) {
 
 function renderRobot(model, robot) {
     tile(robot.id, robot.x, robot.y, 'robot').rot(robot.dir * 90).appendTo(model.fieldElem);
+}
+
+function updateRobot(robots, callback) {
+    robots.forEach((robot, index) => {
+        const opts = {x:robot.x * tileSize, y:robot.y * tileSize, rotation:robot.dir * 90};
+        if(index == 0) {
+            opts.onComplete = callback;
+        }
+        TweenLite.to(div(robot.id).get(), 0.5, opts);
+    });
 }
 
 function renderField(model) {
