@@ -77,8 +77,11 @@ body {
     position: absolute;
     left: 0px;
     right: 0px;
+	top: 0px;
+	bottom: 0px;
     text-align: center;
     font-size: 40px;
+	content: ' ';
 }
 
 .robotCommands .command.forward1:before { content: '\2191'; }
@@ -87,7 +90,24 @@ body {
 .robotCommands .command.back1:before { content: '\2193'; }
 .robotCommands .command.left:before { content: '\21B0'; }
 .robotCommands .command.right:before { content: '\21B1'; }
+/*
 .robotCommands .command.uturn:before { content: '\21B7'; }
+*/
+.robotCommands .command.uturn:before {
+	background-color: Black;
+	/*-webkit-mask: url('img/uturn.svg') 50% 20%/70% no-repeat;*/
+	-webkit-mask: url('img/uturn.svg');
+	-webkit-mask-size: 70%;
+	-webkit-mask-repeat: no-repeat;
+	-webkit-mask-position: 50% 30%;
+	mask: url('img/uturn.svg');
+	mask-size: 70%;
+	mask-repeat: no-repeat;
+	mask-position: 50% 30%;
+}
+.robotCommands .command.selected.uturn:before {
+	background-color: Green;
+}
 
 .robotCommands .command:after {
     content: attr(data-prio); 
