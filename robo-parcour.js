@@ -36,8 +36,26 @@ function dir2Vec(dir) {
     }
 }
 
-function canMoveTo(tileData, x, y) {
-    return tileData[y][x] !== 1;
+function robotAt(model, x, y) {
+    return model.robots.find(robot => robot.x == x && robot.y == y);
+}
+
+function tryMoveTo(model, robot, vec) {
+    const newX = Math.round(robot.x + vec.x);
+    const newY = Math.round(robot.y + vec.y);
+    if(model.tileData[newY][newX] === 1) { //wall
+        return [];
+    };
+    const robotToPush = robotAt(model, newX, newY);
+    if(robotToPush) {
+        robotsToPush = tryMoveTo(model, robotToPush, vec);
+        if(robotsToPush.length > 0) {
+            return robotToPush.push(robot);
+        } else {
+            return [];
+        }
+    }
+    return [robot];
 }
 
 function move(model, robot, dir, speed, callback) {
@@ -47,13 +65,16 @@ function move(model, robot, dir, speed, callback) {
         if(steps <= 0) {
             callback();
         } else {
-            const newX = Math.round(robot.x + vec.x * Math.sign(speed));
-            const newY = Math.round(robot.y + vec.y * Math.sign(speed));
-            if(canMoveTo(model.tileData, newX, newY)) {
-                robot.x = newX;
-                robot.y = newY;
+            const robotsToMove = tryMoveTo(model, robot, vec);
+            if(robotsToMove.length == 0) {
+                callback();
+                return;
             }
-            updateRobot([robot], () => singleStep(steps - 1));
+            robotsToMove.forEach(robotToMove => {
+                robotToMove.x += vec.x;
+                robotToMove.y += vec.y;
+            });
+            updateRobot(robotsToMove, () => singleStep(steps - 1));
         }
     }
     singleStep(steps);
@@ -129,7 +150,7 @@ function executeProgramm(model) {
         .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
         .filter(robotCommand => robotCommand.commandCard !== undefined)
         .sort((rc1, rc2) => rc2.commandCard.prio > rc1.commandCard.prio);
-    console.log(nextCommands);
+    //TODO: fill with random commands if not filled correctly
 
     if(nextCommands.length == 0) {
         nextRound(model);
@@ -145,21 +166,6 @@ function executeProgramm(model) {
         robotCommand.robot.commandInterface[robotCommand.commandCard.command](executeSingleRobotCommand)
     }
     executeSingleRobotCommand();
-    /*
-    model.robots.forEach(robot => {
-        const command = robot.selectedCommands.shift();
-        renderCommands(model, robot, selectCommand, unselectCommand);
-        if(command) {
-            done = false;
-            robot.commandInterface[command.command]();
-        };
-    });
-    if(done) {
-        nextRound(fieldModel);        
-    } else {
-        setTimeout(() => executeProgramm(model), 1000);
-    }
-    */
 }
 
 const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
