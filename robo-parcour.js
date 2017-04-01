@@ -23,6 +23,16 @@ const fieldModel = {
             x: 7, 
             y: 6,
             dir: 3
+        }, {
+            id: 'robot3',
+            x: 7, 
+            y: 1,
+            dir: 3
+        }, {
+            id: 'robot4',
+            x: 9, 
+            y: 1,
+            dir: 3
         }
     ],
     tiles: ['empty','wall', 'pit'],
@@ -50,7 +60,7 @@ function tryMoveTo(model, robot, vec) {
     if(robotToPush) {
         robotsToPush = tryMoveTo(model, robotToPush, vec);
         if(robotsToPush.length > 0) {
-            return robotToPush.push(robot);
+            return robotsToPush.concat(robot);
         } else {
             return [];
         }

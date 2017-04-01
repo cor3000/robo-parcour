@@ -86,7 +86,7 @@ body {
 
 .robotCommands .command.forward1:before { content: '\2191'; }
 .robotCommands .command.forward2:before { content: '\21C8'; }
-.robotCommands .command.forward3:before { content: '\21F6'; transform: translate(-2px, 0) rotate(-90deg)}
+.robotCommands .command.forward3:before { content: '\21F6'; transform: translate(4px, -6px) rotate(-90deg)}
 .robotCommands .command.back1:before { content: '\2193'; }
 .robotCommands .command.left:before { content: '\21B0'; }
 .robotCommands .command.right:before { content: '\21B1'; }
