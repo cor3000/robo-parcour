@@ -103,10 +103,14 @@ function renderField(model) {
     model.items.forEach(item => {
         const col = item.x;
         const row = item.y;
-        const styleClass = item.type + (item.ownerId ? ` ${item.ownerId}` : '');
-        tile(`tile${row}_${col}`, col, row, styleClass)
-            .rot(item.dir * 90)
-            .appendTo(model.fieldElem);
+        const styleClass = item.type + 
+            (item.ownerId ? ` ${item.ownerId}` : '');
+        const fieldTile = tile(`tile_${item.type}_${row}_${col}`, col, row, styleClass)
+            .rot(item.dir * 90);
+        if(item.type === CHECKPOINT && item.index >= 0) {
+            fieldTile.attr('data-checkpoint-index', item.index + 1);
+        }
+        fieldTile.appendTo(model.fieldElem);
     });
     model.robots.forEach(robot => renderRobot(model, robot));
 }

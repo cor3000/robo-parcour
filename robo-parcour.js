@@ -1,3 +1,11 @@
+let idCounter = 0;
+function nextId() {
+    return idCounter++;
+}
+
+const CHECKPOINT = 'checkpoint';
+const REPAIR = 'repair';
+
 const level1Data = {
     dirs: {
       right: 0,  
@@ -9,7 +17,7 @@ const level1Data = {
         0: 'empty',
         1: 'wall', 
         2: 'pit', 
-        3: 'wrench',
+        3: REPAIR,
         4: 'spike',
         20: 'conveyor-right',
         21: 'conveyor-down',
@@ -19,15 +27,17 @@ const level1Data = {
         51: 'start-down',
         52: 'start-left',
         53: 'start-up',
+        60: CHECKPOINT
     },
     tileData : [
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [ 1,50, 0, 0, 1, 0, 0, 0, 0, 0,52, 1],
+        [ 1,50, 0, 0, 1,60, 0, 0, 3, 0,52, 1],
         [ 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-        [ 1, 1, 0, 2,22,22,22, 0, 0, 0, 0, 1],
-        [ 1, 0, 0, 0, 0,20,20,20, 2, 0, 1, 1],
+        [ 1, 1, 0, 2,22,22,22, 0,60, 0, 0, 1],
+        [ 1, 0, 0,60, 0,20,20,20, 2, 0, 1, 1],
         [ 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
-        [ 1,50,53,53,53, 0, 0, 1, 0, 0,52, 1],
+        [ 1,50, 0, 3, 0, 0, 60, 1, 0, 0,52, 1],
+        //[ 1,50,53,53,53, 0, 0, 1, 0, 0,52, 1],
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ], 
     items : [
@@ -41,7 +51,6 @@ const gameModel = {
 }
 
 function initGameModel(model, levelData) {
-    let idCounter = 0;
     const items = [];
     levelData.tileData.forEach((row, y) => {
         row.forEach((tileId, x) => {
@@ -50,7 +59,7 @@ function initGameModel(model, levelData) {
                 const type = typeAndDir[0];
                 const dir = typeAndDir[1] ? levelData.dirs[typeAndDir[1]] : 0;
                 items.push({
-                    id: type + '-' + idCounter++,
+                    id: type + '-' + nextId(),
                     typeId: tileId,
                     type: type,
                     x: x,
@@ -152,19 +161,6 @@ function randomOf(array, count) {
     return result;
 }
 
-function nextRound(model) {
-    model.robots.forEach(robot => {
-        robot.availableCommands = randomOf(model.commands, 10)
-            .map(command => {return {
-                command, 
-                prio: Math.random()
-             }});
-        robot.selectedCommands = [];
-        robot.commandInterface = robotCommands(model, robot);
-        renderCommands(model, robot, selectCommand, unselectCommand);
-    });
-}
-
 function selectCommand(robot, command, index) {
     if(robot.selectedCommands.length < 5) {
         robot.availableCommands.splice(index, 1);
@@ -179,7 +175,33 @@ function unselectCommand(robot, command, index) {
     renderCommands(gameModel, robot, selectCommand, unselectCommand);
 }
 
-function executeProgramm(model) {
+function nextRound(model) {
+    model.robots.forEach(robot => {
+        robot.availableCommands = randomOf(model.commands, 10)
+            .map(command => {return {
+                command, 
+                prio: Math.random()
+             }});
+        robot.selectedCommands = [];
+        robot.commandInterface = robotCommands(model, robot);
+        renderCommands(model, robot, selectCommand, unselectCommand);
+    });
+}
+
+function cleanupRound(model, callback) {
+    console.log('repairRobots');
+    model.robots.forEach(robot => {
+        const repairSite = itemsAt(model, robot.x, robot.y)
+            .find(item => item.type === REPAIR || item.type === CHECKPOINT);
+        if(repairSite) {
+            robot.energy = Math.min(robot.energy + 1, 10);
+        }
+    });
+    callback();
+}
+
+
+function executeProgramm(model, step) {
     let done = true;
     const nextCommands = model.robots
         .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
@@ -188,45 +210,98 @@ function executeProgramm(model) {
     //TODO: fill with random commands if not filled correctly
 
     if(nextCommands.length == 0) {
-        nextRound(model);
+        cleanupRound(model, () => nextRound(model));
         return;
     }
 
-    const executeSingleRobotCommand = function() {
-        const robotCommand = nextCommands.shift();
-        if(!robotCommand) {
-            setTimeout(() => executeProgramm(model), 1000);
-            return;
+    const executeCommands = function(robotCommands, callback) {
+        const robotCommand = robotCommands[0];
+        if(robotCommand) {
+            const commandName = robotCommand.commandCard.command;
+            robotCommand.robot.commandInterface[commandName](
+                () => executeCommands(robotCommands.slice(1), callback)
+            );
+        } else {
+            callback();
         }
-        robotCommand.robot.commandInterface[robotCommand.commandCard.command](executeSingleRobotCommand)
-    }
-    executeSingleRobotCommand();
+    };
+
+    const moveWorld = function(callback) {
+        console.log('moveWorld');
+        console.log('conveyors');
+        
+
+        callback();
+    };
+
+    const fireLasers = function(callback) {
+        console.log('fireLasers');
+        callback();
+    };
+
+    const handleCheckpoints = function(callback) {
+        console.log('handleCheckpoints');
+        callback();
+    };
+
+    const executeStepSequence = function(sequence) {
+        const next = sequence[0];
+        if(next) {
+            next(() => executeStepSequence(sequence.slice(1)));
+        } else {
+            setTimeout(() => executeProgramm(model), 1000);
+        }
+    };
+
+    executeStepSequence([
+        executeCommands.bind(this, nextCommands),
+        moveWorld, 
+        fireLasers, 
+        handleCheckpoints
+    ]);
+
 }
 
-initGameModel(gameModel, level1Data);
-initField(gameModel);
 
+function startGame(gameModel, options) {
+    initGameModel(gameModel, options.levelData);
 
-function startGame(numPlayers, gameModel) {
     const starts = gameModel.items.filter(item => item.type === 'start');
-    for(let i = 0; i < numPlayers; i++) {
+    for(let i = 0; i < options.numPlayers; i++) {
         const startIndex = Math.floor(Math.random() * starts.length);
         const start = starts.splice(startIndex, 1)[0];
         const robot = {
             id: 'robot' + i,
             dir: start.dir,
             energy: 10,
+            lives: 3,
             x: start.x,
             y: start.y,
-            checkPoint: start.id,
+            startId: start.id,
+            respawnId: start.id
         };
         start.ownerId = robot.id;
         gameModel.robots.push(robot);
     }
+    const checkpoints = gameModel.items.filter(item => item.type === CHECKPOINT);
+    for(let i = 0; i < options.numCheckpoints; i++) {
+        const checkpointIndex = Math.floor(Math.random() * starts.length);
+        const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];
+        checkpoints.push({
+            checkpointId: CHECKPOINT + '-' + nextId(),
+        });
+        checkpoint.index = i;
+    }
+
 }
 
-startGame(4, gameModel);
+startGame(gameModel, {
+    numPlayers: 2, 
+    numCheckpoints: 3, 
+    levelData: level1Data
+});
 
+initField(gameModel);
 renderField(gameModel);
 
 gameModel.robots.forEach(robot => {
