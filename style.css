@@ -7,10 +7,10 @@ body {
 .field {
     position: relative;
     margin: 15px;
-    width: 550px;
+    width: 600px;
     height: 400px;
     background-image: url('img/metal_floor.jpg');
-    background-size: 12.5%;
+    background-size: 8.33333333%;
 }
 
 .tile {
@@ -22,6 +22,11 @@ body {
     background-image: url('img/pit.png');
     background-size: 100%;
 }
+.tile.conveyor {
+    background-image: url('img/conveyor.png');
+    opacity: 0.8;
+    background-size: 100%;
+}
 .tile.wall {
     background-image: url('img/crate.png');
     background-size: 100%;
@@ -29,19 +34,44 @@ body {
     border: 1px solid black;
     box-shadow: 13px 13px 30px 0px black
 }
+.tile.start:before {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+	top: 0px;
+	bottom: 0px;
+    text-align: center;
+    font-size: 50px;
+	content: '\27A7';
+}
+
+.robot0 {
+	color: green;
+}
+.robot1 {
+	color: purple;
+}
+.robot2 {
+	color: teal;
+}
+.robot3 {
+	color: darkgoldenrod;
+}
+
+
 .tile.robot {
     background-size: 100%;
 }
-.tile#robot1 {
+.tile#robot0 {
     background-image: url('img/robot_1.png');
 }
-.tile#robot2 {
+.tile#robot1 {
     background-image: url('img/robot_2.png');
 }
-.tile#robot3 {
+.tile#robot2 {
     background-image: url('img/robot_3.png');
 }
-.tile#robot4 {
+.tile#robot3 {
     background-image: url('img/robot_4.png');
 }
 
@@ -62,15 +92,13 @@ body {
 }
 
 .robotCommands .command.available {
-    background-color: grey;
+    background-color: #223;
     cursor: pointer;
 }
 
 .robotCommands .command.selected {
-    background-color: Silver;
-    color: white;
+    background-color: silver;
     cursor: pointer;
-    color: Green;
 }
 
 .robotCommands .command:before {
@@ -105,8 +133,17 @@ body {
 	mask-repeat: no-repeat;
 	mask-position: 50% 30%;
 }
-.robotCommands .command.selected.uturn:before {
-	background-color: Green;
+.robotCommands.robot0 .command.uturn:before {
+	background-color: green;
+}
+.robotCommands.robot1 .command.uturn:before {
+	background-color: purple;
+}
+.robotCommands.robot2 .command.uturn:before {
+	background-color: teal;
+}
+.robotCommands.robot3 .command.uturn:before {
+	background-color: darkgoldenrod;
 }
 
 .robotCommands .command:after {

@@ -84,7 +84,9 @@ function initCommands(model, robot) {
 }
 
 function renderRobot(model, robot) {
-    tile(robot.id, robot.x, robot.y, 'robot').rot(robot.dir * 90).appendTo(model.fieldElem);
+    tile(robot.id, robot.x, robot.y, 'robot')
+        .rot(robot.dir * 90)
+        .appendTo(model.fieldElem);
 }
 
 function updateRobot(robots, callback) {
@@ -98,10 +100,13 @@ function updateRobot(robots, callback) {
 }
 
 function renderField(model) {
-    model.tileData.forEach((tileRow, row) => {
-        tileRow.forEach((tileId, col) => {
-            tile(`tile${row}_${col}`, col, row, model.tiles[tileId]).appendTo(model.fieldElem);
-        });
+    model.items.forEach(item => {
+        const col = item.x;
+        const row = item.y;
+        const styleClass = item.type + (item.ownerId ? ` ${item.ownerId}` : '');
+        tile(`tile${row}_${col}`, col, row, styleClass)
+            .rot(item.dir * 90)
+            .appendTo(model.fieldElem);
     });
     model.robots.forEach(robot => renderRobot(model, robot));
 }
