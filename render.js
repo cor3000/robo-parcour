@@ -1,4 +1,5 @@
 const tileSize = 50;
+const animationDuration = 0.5;
 
 function div(id) {
     let elem = document.getElementById(id);
@@ -13,13 +14,13 @@ function div(id) {
             return ops;
         },
         atPos: (x, y) => {
-            TweenLite.to(elem, 0.5, {x:x, y:y});
+            TweenLite.to(elem, 0, {x:x, y:y});
             //elem.style.transform = `translate(${x}px, ${y}px)`;
             return ops;
         },
 
         rot: (angle) => {
-            TweenLite.to(elem, 0.5, {rotation:angle})            
+            TweenLite.to(elem, 0, {rotation:angle})            
             //elem.style.transform += ` rotate(${angle}deg)`;
             return ops;
         },
@@ -95,7 +96,14 @@ function updateRobot(robots, callback) {
         if(index == 0) {
             opts.onComplete = callback;
         }
-        TweenLite.to(div(robot.id).get(), 0.5, opts);
+        TweenLite.to(div(robot.id).get(), animationDuration, opts);
+    });
+}
+
+function animateConveyors() {
+    TweenLite.to('.conveyor', animationDuration, {
+        backgroundPositionX: tileSize,
+        onComplete: () => TweenLite.to('.conveyor', 0, {backgroundPositionX: 0})
     });
 }
 

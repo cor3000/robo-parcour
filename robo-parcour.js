@@ -5,6 +5,7 @@ function nextId() {
 
 const CHECKPOINT = 'checkpoint';
 const REPAIR = 'repair';
+const CONVEYOR = 'conveyor';
 
 const level1Data = {
     dirs: {
@@ -19,10 +20,10 @@ const level1Data = {
         2: 'pit', 
         3: REPAIR,
         4: 'spike',
-        20: 'conveyor-right',
-        21: 'conveyor-down',
-        22: 'conveyor-left',
-        23: 'conveyor-up',
+        20: `${CONVEYOR}-right`,
+        21: `${CONVEYOR}-down`,
+        22: `${CONVEYOR}-left`,
+        23: `${CONVEYOR}-up`,
         50: 'start-right',
         51: 'start-down',
         52: 'start-left',
@@ -229,9 +230,19 @@ function executeProgramm(model, step) {
     const moveWorld = function(callback) {
         console.log('moveWorld');
         console.log('conveyors');
-        
-
-        callback();
+        model.robots
+            .map(robot => {return {
+                    robot, 
+                    conveyor: itemsAt(model, robot.x, robot.y, CONVEYOR)[0]
+                }})
+            .filter(robotConveyor => robotConveyor.conveyor) /*robots on conveyor*/
+            .forEach(rc => {
+                const vec = dir2Vec(rc.conveyor.dir);
+               rc.robot.x += vec.x;
+               rc.robot.y += vec.y;
+            });
+        animateConveyors();
+        updateRobot(model.robots, callback);
     };
 
     const fireLasers = function(callback) {
@@ -293,6 +304,17 @@ function startGame(gameModel, options) {
         checkpoint.index = i;
     }
 
+    initField(gameModel);
+    renderField(gameModel);
+
+    gameModel.robots.forEach(robot => {
+        initCommands(gameModel, robot);
+    });
+
+    const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
+    executeBtn.addEventListener('click', () => executeProgramm(gameModel));
+
+    nextRound(gameModel);
 }
 
 startGame(gameModel, {
@@ -300,15 +322,3 @@ startGame(gameModel, {
     numCheckpoints: 3, 
     levelData: level1Data
 });
-
-initField(gameModel);
-renderField(gameModel);
-
-gameModel.robots.forEach(robot => {
-    initCommands(gameModel, robot);
-});
-
-const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
-executeBtn.addEventListener('click', () => executeProgramm(gameModel));
-
-nextRound(gameModel);
