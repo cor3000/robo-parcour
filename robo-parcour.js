@@ -3,6 +3,7 @@ function nextId() {
     return idCounter++;
 }
 
+const START = 'start';
 const CHECKPOINT = 'checkpoint';
 const REPAIR = 'repair';
 const CONVEYOR = 'conveyor';
@@ -34,10 +35,10 @@ const level1Data = {
         29: `${CONVEYOR_RIGHT_TURN}-down`,
         30: `${CONVEYOR_RIGHT_TURN}-left`,
         31: `${CONVEYOR_RIGHT_TURN}-up`,
-        50: 'start-right',
-        51: 'start-down',
-        52: 'start-left',
-        53: 'start-up',
+        50: `${START}-right`,
+        51: `${START}--down`,
+        52: `${START}-left`,
+        53: `${START}--up`,
         60: CHECKPOINT
     },
     tileData : [
@@ -110,8 +111,8 @@ function itemsAt(model, x, y, type) {
 
 function robotsOn(model, type) {
     return model.robots
-        .map(r => { return {r, items: itemsAt(model, r.x, r.y, type)};})
-        .filter(ri => ri.items.length);
+        .map(r => { return {robot: r, item: itemsAt(model, r.x, r.y, type)[0]};})
+        .filter(ri => ri.item);
 }
 
 function tryMoveTo(model, robot, vec) {
@@ -208,11 +209,8 @@ function nextRound(model) {
 
 function cleanupRound(model, callback) {
     console.log('repairRobots');
-    model.robots.forEach(robot => {
-        const repairSite = itemsAt(model, robot.x, robot.y, [REPAIR, CHECKPOINT])[0];
-        if(repairSite) {
-            robot.energy = Math.min(robot.energy + 1, 10);
-        }
+    robotsOn(model, [REPAIR, CHECKPOINT]).forEach(ri => {
+        ri.robot.energy = Math.min(ri.robot.energy + 1, 10);
     });
     callback();
 }
@@ -220,11 +218,11 @@ function cleanupRound(model, callback) {
 
 function executeProgramm(model, step) {
     let done = true;
+    //TODO: fill with random commands if not filled correctly
     const nextCommands = model.robots
         .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
         .filter(robotCommand => robotCommand.commandCard !== undefined)
         .sort((rc1, rc2) => rc2.commandCard.prio > rc1.commandCard.prio);
-    //TODO: fill with random commands if not filled correctly
 
     if(nextCommands.length == 0) {
         cleanupRound(model, () => nextRound(model));
@@ -246,14 +244,9 @@ function executeProgramm(model, step) {
     const moveWorld = function(callback) {
         console.log('moveWorld');
         console.log('conveyors');
-        model.robots
-            .map(robot => {return {
-                    robot, 
-                    conveyor: itemsAt(model, robot.x, robot.y, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
-                }})
-            .filter(robotConveyor => robotConveyor.conveyor) /*robots on conveyor*/
+        robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
             .forEach(rc => {
-                const vec = dir2Vec(rc.conveyor.dir);
+                const vec = dir2Vec(rc.item.dir);
                 rc.robot.x += vec.x;
                 rc.robot.y += vec.y;
                 const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
@@ -273,7 +266,11 @@ function executeProgramm(model, step) {
 
     const handleCheckpoints = function(callback) {
         console.log('handleCheckpoints');
-
+        robotsOn(model, [START, CHECKPOINT, REPAIR]).forEach(ri => {
+            const checkpoint = ri.item;
+            
+            ri.robot.respawnId = checkpointId;
+        });
         callback();
     };
 
