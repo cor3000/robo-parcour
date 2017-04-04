@@ -230,7 +230,7 @@ function unselectCommand(robot, command, index) {
 
 function nextRound(model) {
     model.robots.forEach(robot => {
-        robot.availableCommands = randomOf(model.commands, 10)
+        robot.availableCommands = randomOf(model.commands, robot.energy)
             .map(command => {return {
                 command, 
                 prio: Math.random()
@@ -327,6 +327,10 @@ function executeProgramm(model, step) {
                     from: robot,
                     to: target
                 };
+                //TODO: handle energy loss after animation
+                if(target.energy) {
+                    target.energy--;
+                }
                 return shot;
             });
 
