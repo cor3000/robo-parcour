@@ -24,24 +24,29 @@ body {
 }
 .tile.conveyor {
     background-image: url('img/conveyor.png');
-    opacity: 0.8;
     background-size: 100%;
     background-position-x: 0px;
 }
-.tile.conveyorLeft {
+.tile.conveyorLeft, 
+.tile.conveyorRight {
 	overflow: hidden;
 }
-.tile.conveyorLeft > .bg {
+.tile.conveyorLeft > .bg,
+.tile.conveyorRight > .bg {
 	position: absolute;
-	bottom: 0;
-	left: 0;
 	width: 200%;
 	height: 200%;
-	background-image: url('img/conveyor-turn.png');
-	opacity: 0.8;
 	background-size: 100%;
-	/*background-position: bottom right;*/
-	transform: rotate(0deg);
+}
+.tile.conveyorLeft > .bg {
+	bottom: 0;
+	left: 0;
+	background-image: url('img/conveyor-turn-left.png');
+}
+.tile.conveyorRight > .bg {
+	top: 0;
+	left: 0;
+	background-image: url('img/conveyor-turn-right.png');
 }
 .tile.wall {
     background-image: url('img/crate.png');
@@ -78,23 +83,26 @@ body {
 
 .tile.checkpoint[data-checkpoint-index]:before {
     position: absolute;
-    left: 0px;
+    left: 4px;
     right: 0px;
-	top: 0px;
-	bottom: 0px;
-    text-align: center;
-    font-size: 40px;
-	content: '\2691';
-	color: darkkhaki
+    top: -2px;
+    bottom: 0px;
+    background-image: url('img/checkpoint.png');
+    background-size: 100%; 
+    content: ' ';
+	transform: rotate(-18deg)
 }
 .tile.checkpoint[data-checkpoint-index]:after {
     position: absolute;
-    left: 21px;
-	top: 9px;
+    left: 12px;
+	top: 5.5px;
     text-align: center;
-    font-size: 17px;
 	content: attr(data-checkpoint-index);
-	color: black;
+	color: maroon;
+	font-family: monospace;
+    font-size: 17px;
+	font-weight: bold;
+	transform: rotate(-25deg)
 }
 
 .robot0 {

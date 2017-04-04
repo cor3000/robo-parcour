@@ -4,6 +4,8 @@ function nextId() {
 }
 
 const START = 'start';
+const WALL = 'wall';
+const PIT = 'pit';
 const CHECKPOINT = 'checkpoint';
 const REPAIR = 'repair';
 const CONVEYOR = 'conveyor';
@@ -19,8 +21,8 @@ const level1Data = {
     },
     tiles: {
         0: 'empty',
-        1: 'wall', 
-        2: 'pit', 
+        1: WALL, 
+        2: PIT, 
         3: REPAIR,
         4: 'spike',
         20: `${CONVEYOR}-right`,
@@ -41,15 +43,14 @@ const level1Data = {
         53: `${START}--up`,
         60: CHECKPOINT
     },
-    tileData : [
+    tileData: [
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [ 1,50, 0, 0, 1,60, 0, 0, 3, 0,52, 1],
-        [ 1, 0, 0, 0,25,22,22,26, 1, 0, 0, 1],
-        [ 1, 1, 0, 2,21, 0, 0,23,60, 0, 0, 1],
-        [ 1, 0, 0,60,21, 0,60,23, 2, 0, 1, 1],
-        [ 1, 0, 0, 1,24,20,20,27, 0, 0, 0, 1],
-        [ 1,50, 0, 3, 0, 0, 60, 1, 0, 0,52, 1],
-        //[ 1,50,53,53,53, 0, 0, 1, 0, 0,52, 1],
+        [ 1, 0,50, 0, 0, 0, 0,60, 0, 3, 0, 1],
+        [ 1, 0, 0, 0, 2,25,22,22,26, 1,60, 1],
+        [ 1,50, 0,25,22,30,60, 0,23,60, 0, 1],
+        [ 1,50, 0,24,20,29, 2, 0,23, 2, 1, 1],
+        [ 1, 0, 0, 0, 1,24,20,20,27, 0, 0, 1],
+        [ 1, 0,50, 0, 3, 0, 0,60, 1, 0,60, 1],
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ], 
     items : [
@@ -109,6 +110,15 @@ function itemsAt(model, x, y, type) {
     return items;
 }
 
+function itemById(model, itemId) {
+    return model.items.find(item => item.id === itemId);
+}
+
+
+function removeItem(model, item) {
+    model.items.splice(model.items.indexOf(item), 1);
+}
+
 function robotsOn(model, type) {
     return model.robots
         .map(r => { return {robot: r, item: itemsAt(model, r.x, r.y, type)[0]};})
@@ -133,7 +143,25 @@ function tryMoveTo(model, robot, vec) {
     return [robot];
 }
 
+function checkPits(model, callback) {
+    const robotsOnPits = robotsOn(model, PIT)
+    if(robotsOnPits.length > 0) {
+        robotsOnPits.forEach(ri => {
+            ri.robot.selectedCommands.length = 0;
+            ri.robot.death = 'pit';
+        });
+        animatePitDeath(robotsOnPits.map(ri => ri.robot), callback);
+    } else {
+        callback();
+    }
+
+}
+
 function move(model, robot, dist, callback) {
+    if(robot.death) {
+        callback();
+        return;
+    }
     const vec = dir2Vec(robot.dir, dist);
     const steps = Math.abs(dist);
     const singleStep = function(steps) {
@@ -149,13 +177,18 @@ function move(model, robot, dist, callback) {
                 robotToMove.x += vec.x;
                 robotToMove.y += vec.y;
             });
-            updateRobot(robotsToMove, () => singleStep(steps - 1));
+            const nextStepCallback = () => singleStep(steps - 1);
+            updateRobot(robotsToMove, () => checkPits(model, nextStepCallback));
         }
     }
     singleStep(steps);
 }
 
 function turn(model, robot, speed, callback) {
+    if(robot.death) {
+        callback();
+        return;
+    }
     robot.dir += speed;
     updateRobot([robot], callback);
 }
@@ -212,7 +245,22 @@ function cleanupRound(model, callback) {
     robotsOn(model, [REPAIR, CHECKPOINT]).forEach(ri => {
         ri.robot.energy = Math.min(ri.robot.energy + 1, 10);
     });
-    callback();
+    const respawnedRobots = model.robots
+        .filter(robot => robot.death && robot.lives > 0)
+        .map(robot => {
+            delete robot.death;
+            robot.lives--;
+            robot.energy = 10;
+            const respawnPoint = itemById(model, robot.respawnId);
+            robot.x = respawnPoint.x;
+            robot.y = respawnPoint.y;
+            return robot;
+        });
+    if(respawnedRobots.length > 0) {
+        animateRespawn(respawnedRobots, callback())
+    } else {
+        callback();
+    }
 }
 
 
@@ -243,7 +291,6 @@ function executeProgramm(model, step) {
 
     const moveWorld = function(callback) {
         console.log('moveWorld');
-        console.log('conveyors');
         robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
             .forEach(rc => {
                 const vec = dir2Vec(rc.item.dir);
@@ -323,11 +370,13 @@ function startGame(gameModel, options) {
     const checkpoints = gameModel.items.filter(item => item.type === CHECKPOINT);
     gameModel.checkpoints = [];
     for(let i = 0; i < options.numCheckpoints; i++) {
-        const checkpointIndex = Math.floor(Math.random() * starts.length);
+        const checkpointIndex = Math.floor(Math.random() * checkpoints.length);
         const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];
         gameModel.checkpoints.push(checkpoint.id);
         checkpoint.index = i;
     }
+    //remove unused checkpoints
+    checkpoints.forEach(cp => removeItem(gameModel, cp));
 
     initField(gameModel);
     renderField(gameModel);

@@ -91,9 +91,9 @@ function renderRobot(model, robot) {
 function updateRobot(robots, callback) {
     robots.forEach((robot, index) => {
         const opts = {
-                x:robot.x * tileSize, 
-                y:robot.y * tileSize, 
-                rotation:robot.dir * 90,
+                x: robot.x * tileSize, 
+                y: robot.y * tileSize, 
+                rotation: robot.dir * 90,
                 ease: Sine.easeInOut
                };
         if(index == 0) {
@@ -113,6 +113,39 @@ function animateConveyors() {
         rotation: -90,
         ease: Sine.easeInOut,
         onComplete: () => TweenLite.set('.conveyorLeft > .bg', {rotation: 0})
+    });
+    TweenLite.to('.conveyorRight > .bg', animationDuration, {
+        rotation: 90,
+        ease: Sine.easeInOut,
+        onComplete: () => TweenLite.set('.conveyorRight > .bg', {rotation: 0})
+    });
+}
+
+function animatePitDeath(robots, callback) {
+    robots.forEach((robot, index) => {
+        const opts = {scale: 0.2, opacity: 0, rotation: robot.dir * 90 + 720};
+        if(index == 0) {
+            opts.onComplete = callback;
+        }
+        TweenLite.to(div(robot.id).get(), 1.5, opts);
+    });
+}
+
+function animateRespawn(robots, callback) {
+    robots.forEach((robot, index) => {
+        const robotDiv = div(robot.id).get();
+        TweenLite.set(robotDiv, {scale: 2, opacity: 0});
+        const opts = {
+            x: robot.x * tileSize, 
+            y: robot.y * tileSize, 
+            rotation: robot.dir * 90,
+            scale: 1, 
+            opacity: 1 
+        };
+        if(index == 0) {
+            opts.onComplete = callback;
+        }
+        TweenLite.to(div(robot.id).get(), 1.5, opts);
     });
 }
 
