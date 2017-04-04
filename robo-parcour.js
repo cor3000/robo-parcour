@@ -3,6 +3,7 @@ function nextId() {
     return idCounter++;
 }
 
+const ROBOT = 'robot';
 const START = 'start';
 const WALL = 'wall';
 const PIT = 'pit';
@@ -144,7 +145,7 @@ function tryMoveTo(model, robot, vec) {
 }
 
 function checkPits(model, callback) {
-    const robotsOnPits = robotsOn(model, PIT)
+    const robotsOnPits = robotsOn(model, PIT);
     if(robotsOnPits.length > 0) {
         robotsOnPits.forEach(ri => {
             ri.robot.selectedCommands.length = 0;
@@ -308,7 +309,35 @@ function executeProgramm(model, step) {
 
     const fireLasers = function(callback) {
         console.log('fireLasers');
-        callback();
+        const shots = model.robots
+            .filter(robot => !robot.death)
+            .map(robot => {
+                const vec = dir2Vec(robot.dir);
+                let target = null;
+                let shotX = robot.x;
+                let shotY = robot.y;
+                while(!target) {
+                    shotX += vec.x;
+                    shotY += vec.y;
+                    target = 
+                        itemsAt(model, shotX, shotY, WALL)[0] ||
+                        robotAt(model, shotX, shotY);
+                }
+                const shot = {
+                    from: robot,
+                    to: target
+                };
+                return shot;
+            });
+
+        animateLaserFire(model, shots, callback);
+        //TODO: reduce energy
+        //if(target.type === ROBOT) {
+        //    target.energy--;
+        //}
+
+
+        //callback();
     };
 
     const handleCheckpoints = function(callback) {
@@ -356,6 +385,7 @@ function startGame(gameModel, options) {
         const start = starts.splice(startIndex, 1)[0];
         const robot = {
             id: 'robot' + i,
+            type: ROBOT,
             dir: start.dir,
             energy: 10,
             lives: 3,

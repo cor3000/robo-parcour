@@ -149,6 +149,28 @@ function animateRespawn(robots, callback) {
     });
 }
 
+function animateLaserFire(model, shots, callback) {
+    shots.forEach((shot, index) => {
+        const bullet = tile(`shot${index}`, shot.from.x, shot.from.y, 'shot')
+            .appendTo(model.fieldElem).get();
+        const opts = {
+            x: shot.to.x * tileSize,
+            y: shot.to.y * tileSize
+        };
+        if(index === 0) {
+            opts.onComplete = () => {
+                bullet.parentElement.removeChild(bullet);
+                callback();
+            }
+        } else {
+            opts.onComplete = () => {
+                bullet.parentElement.removeChild(bullet);
+            };
+        }
+        TweenLite.to(bullet, animationDuration, opts);
+    });
+};
+
 function renderField(model) {
     model.items.forEach(item => {
         const col = item.x;

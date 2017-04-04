@@ -18,6 +18,10 @@ body {
     position: absolute;
 }
 
+.tile.shot {
+    background-image: url('img/bullet.png');
+    background-size: 100%;
+}
 .tile.pit {
     background-image: url('img/pit.png');
     background-size: 100%;
