@@ -26,7 +26,22 @@ body {
     background-image: url('img/conveyor.png');
     opacity: 0.8;
     background-size: 100%;
-    background-position-x: 50px;
+    background-position-x: 0px;
+}
+.tile.conveyorLeft {
+	overflow: hidden;
+}
+.tile.conveyorLeft > .bg {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 200%;
+	height: 200%;
+	background-image: url('img/conveyor-turn.png');
+	opacity: 0.8;
+	background-size: 100%;
+	/*background-position: bottom right;*/
+	transform: rotate(0deg);
 }
 .tile.wall {
     background-image: url('img/crate.png');

@@ -6,6 +6,8 @@ function nextId() {
 const CHECKPOINT = 'checkpoint';
 const REPAIR = 'repair';
 const CONVEYOR = 'conveyor';
+const CONVEYOR_LEFT_TURN = 'conveyorLeft';
+const CONVEYOR_RIGHT_TURN = 'conveyorRight';
 
 const level1Data = {
     dirs: {
@@ -24,6 +26,14 @@ const level1Data = {
         21: `${CONVEYOR}-down`,
         22: `${CONVEYOR}-left`,
         23: `${CONVEYOR}-up`,
+        24: `${CONVEYOR_LEFT_TURN}-right`,
+        25: `${CONVEYOR_LEFT_TURN}-down`,
+        26: `${CONVEYOR_LEFT_TURN}-left`,
+        27: `${CONVEYOR_LEFT_TURN}-up`,
+        28: `${CONVEYOR_RIGHT_TURN}-right`,
+        29: `${CONVEYOR_RIGHT_TURN}-down`,
+        30: `${CONVEYOR_RIGHT_TURN}-left`,
+        31: `${CONVEYOR_RIGHT_TURN}-up`,
         50: 'start-right',
         51: 'start-down',
         52: 'start-left',
@@ -33,10 +43,10 @@ const level1Data = {
     tileData : [
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
         [ 1,50, 0, 0, 1,60, 0, 0, 3, 0,52, 1],
-        [ 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1],
-        [ 1, 1, 0, 2,22,22,22, 0,60, 0, 0, 1],
-        [ 1, 0, 0,60, 0,20,20,20, 2, 0, 1, 1],
-        [ 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1],
+        [ 1, 0, 0, 0,25,22,22,26, 1, 0, 0, 1],
+        [ 1, 1, 0, 2,21, 0, 0,23,60, 0, 0, 1],
+        [ 1, 0, 0,60,21, 0,60,23, 2, 0, 1, 1],
+        [ 1, 0, 0, 1,24,20,20,27, 0, 0, 0, 1],
         [ 1,50, 0, 3, 0, 0, 60, 1, 0, 0,52, 1],
         //[ 1,50,53,53,53, 0, 0, 1, 0, 0,52, 1],
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -92,9 +102,16 @@ function robotAt(model, x, y) {
 function itemsAt(model, x, y, type) {
     const items = objectsAt(model.items, x, y);
     if(type) {
-        return items.filter(item => item.type === type);
+        const types = [].concat(type);
+        return items.filter(item => types.indexOf(item.type) >= 0);
     }
     return items;
+}
+
+function robotsOn(model, type) {
+    return model.robots
+        .map(r => { return {r, items: itemsAt(model, r.x, r.y, type)};})
+        .filter(ri => ri.items.length);
 }
 
 function tryMoveTo(model, robot, vec) {
@@ -192,8 +209,7 @@ function nextRound(model) {
 function cleanupRound(model, callback) {
     console.log('repairRobots');
     model.robots.forEach(robot => {
-        const repairSite = itemsAt(model, robot.x, robot.y)
-            .find(item => item.type === REPAIR || item.type === CHECKPOINT);
+        const repairSite = itemsAt(model, robot.x, robot.y, [REPAIR, CHECKPOINT])[0];
         if(repairSite) {
             robot.energy = Math.min(robot.energy + 1, 10);
         }
@@ -233,13 +249,18 @@ function executeProgramm(model, step) {
         model.robots
             .map(robot => {return {
                     robot, 
-                    conveyor: itemsAt(model, robot.x, robot.y, CONVEYOR)[0]
+                    conveyor: itemsAt(model, robot.x, robot.y, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
                 }})
             .filter(robotConveyor => robotConveyor.conveyor) /*robots on conveyor*/
             .forEach(rc => {
                 const vec = dir2Vec(rc.conveyor.dir);
-               rc.robot.x += vec.x;
-               rc.robot.y += vec.y;
+                rc.robot.x += vec.x;
+                rc.robot.y += vec.y;
+                const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
+                if(conveyorTurn) {
+                    if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
+                    if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                }
             });
         animateConveyors();
         updateRobot(model.robots, callback);
@@ -252,6 +273,7 @@ function executeProgramm(model, step) {
 
     const handleCheckpoints = function(callback) {
         console.log('handleCheckpoints');
+
         callback();
     };
 

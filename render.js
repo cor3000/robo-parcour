@@ -14,14 +14,12 @@ function div(id) {
             return ops;
         },
         atPos: (x, y) => {
-            TweenLite.to(elem, 0, {x:x, y:y});
-            //elem.style.transform = `translate(${x}px, ${y}px)`;
+            TweenLite.set(elem, {x:x, y:y});
             return ops;
         },
 
         rot: (angle) => {
-            TweenLite.to(elem, 0, {rotation:angle})            
-            //elem.style.transform += ` rotate(${angle}deg)`;
+            TweenLite.set(elem, {rotation:angle})            
             return ops;
         },
 
@@ -92,7 +90,12 @@ function renderRobot(model, robot) {
 
 function updateRobot(robots, callback) {
     robots.forEach((robot, index) => {
-        const opts = {x:robot.x * tileSize, y:robot.y * tileSize, rotation:robot.dir * 90};
+        const opts = {
+                x:robot.x * tileSize, 
+                y:robot.y * tileSize, 
+                rotation:robot.dir * 90,
+                ease: Sine.easeInOut
+               };
         if(index == 0) {
             opts.onComplete = callback;
         }
@@ -103,7 +106,13 @@ function updateRobot(robots, callback) {
 function animateConveyors() {
     TweenLite.to('.conveyor', animationDuration, {
         backgroundPositionX: tileSize,
-        onComplete: () => TweenLite.to('.conveyor', 0, {backgroundPositionX: 0})
+        ease: Sine.easeInOut,
+        onComplete: () => TweenLite.set('.conveyor', {backgroundPositionX: 0})
+    });
+    TweenLite.to('.conveyorLeft > .bg', animationDuration, {
+        rotation: -90,
+        ease: Sine.easeInOut,
+        onComplete: () => TweenLite.set('.conveyorLeft > .bg', {rotation: 0})
     });
 }
 
@@ -111,14 +120,18 @@ function renderField(model) {
     model.items.forEach(item => {
         const col = item.x;
         const row = item.y;
+        const domId = `tile_${item.type}_${row}_${col}`;
         const styleClass = item.type + 
             (item.ownerId ? ` ${item.ownerId}` : '');
-        const fieldTile = tile(`tile_${item.type}_${row}_${col}`, col, row, styleClass)
+        const fieldTile = tile(domId, col, row, styleClass)
             .rot(item.dir * 90);
         if(item.type === CHECKPOINT && item.index >= 0) {
             fieldTile.attr('data-checkpoint-index', item.index + 1);
         }
         fieldTile.appendTo(model.fieldElem);
+        if(item.type === CONVEYOR_LEFT_TURN || item.type === CONVEYOR_RIGHT_TURN) {
+            div(domId + '-bg').withClass('bg').appendTo(fieldTile.get());
+        }
     });
     model.robots.forEach(robot => renderRobot(model, robot));
 }
