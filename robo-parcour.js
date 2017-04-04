@@ -267,9 +267,16 @@ function executeProgramm(model, step) {
     const handleCheckpoints = function(callback) {
         console.log('handleCheckpoints');
         robotsOn(model, [START, CHECKPOINT, REPAIR]).forEach(ri => {
-            const checkpoint = ri.item;
-            
-            ri.robot.respawnId = checkpointId;
+            const {item, robot} = ri;
+            ri.robot.respawnId = item.id;
+            if(item.type === CHECKPOINT) {
+                const oldCheckpointIndex = model.checkpoints.indexOf(robot.checkpointId);
+                const newCheckpointIndex = model.checkpoints.indexOf(item.id);
+                if(newCheckpointIndex - oldCheckpointIndex === 1) {
+                    robot.checkpointId = item.id;
+                    console.log(robot.id, 'reached', robot.checkpointId);
+                }
+            }
         });
         callback();
     };
@@ -307,19 +314,18 @@ function startGame(gameModel, options) {
             lives: 3,
             x: start.x,
             y: start.y,
-            startId: start.id,
+            checkpointId: start.id,
             respawnId: start.id
         };
         start.ownerId = robot.id;
         gameModel.robots.push(robot);
     }
     const checkpoints = gameModel.items.filter(item => item.type === CHECKPOINT);
+    gameModel.checkpoints = [];
     for(let i = 0; i < options.numCheckpoints; i++) {
         const checkpointIndex = Math.floor(Math.random() * starts.length);
         const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];
-        checkpoints.push({
-            checkpointId: CHECKPOINT + '-' + nextId(),
-        });
+        gameModel.checkpoints.push(checkpoint.id);
         checkpoint.index = i;
     }
 
