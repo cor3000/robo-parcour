@@ -18,7 +18,7 @@ body {
     position: absolute;
 }
 
-.tile.shot {
+.tile.beam {
     background-image: url('img/laser-red.png');
     background-size: 100%;
     background-repeat: no-repeat;
@@ -26,6 +26,14 @@ body {
 }
 .tile.pit {
     background-image: url('img/pit.png');
+    background-size: 100%;
+}
+.tile.gearLeft {
+    background-image: url('img/gear.png');
+    background-size: 100%;
+}
+.tile.gearRight {
+    background-image: url('img/gear.png');
     background-size: 100%;
 }
 .tile.conveyor {

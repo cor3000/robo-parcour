@@ -9,6 +9,8 @@ const WALL = 'wall';
 const PIT = 'pit';
 const CHECKPOINT = 'checkpoint';
 const REPAIR = 'repair';
+const GEAR_LEFT_TURN = 'gearLeft';
+const GEAR_RIGHT_TURN = 'gearRight';
 const CONVEYOR = 'conveyor';
 const CONVEYOR_LEFT_TURN = 'conveyorLeft';
 const CONVEYOR_RIGHT_TURN = 'conveyorRight';
@@ -26,6 +28,8 @@ const level1Data = {
         2: PIT, 
         3: REPAIR,
         4: 'spike',
+        5: GEAR_LEFT_TURN,
+        6: GEAR_RIGHT_TURN,
         20: `${CONVEYOR}-right`,
         21: `${CONVEYOR}-down`,
         22: `${CONVEYOR}-left`,
@@ -49,8 +53,8 @@ const level1Data = {
         [ 1, 0,50, 0, 0, 0, 0,60, 0, 3, 0, 1],
         [ 1, 0, 0, 0, 2,25,22,22,26, 1,60, 1],
         [ 1,50, 0,25,22,30,60, 0,23,60, 0, 1],
-        [ 1,50, 0,24,20,29, 2, 0,23, 2, 1, 1],
-        [ 1, 0, 0, 0, 1,24,20,20,27, 0, 0, 1],
+        [ 1,50, 0,24,20,29, 2, 0,23, 2, 6, 1],
+        [ 1, 0, 0, 0, 5,24,20,20,27, 0, 0, 1],
         [ 1, 0,50, 0, 3, 0, 0,60, 1, 0,60, 1],
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ], 
@@ -144,12 +148,16 @@ function tryMoveTo(model, robot, vec) {
     return [robot];
 }
 
+function killRobot(robot, reason) {
+    robot.selectedCommands.length = 0;
+    robot.death = reason;
+}
+
 function checkPits(model, callback) {
     const robotsOnPits = robotsOn(model, PIT);
     if(robotsOnPits.length > 0) {
         robotsOnPits.forEach(ri => {
-            ri.robot.selectedCommands.length = 0;
-            ri.robot.death = 'pit';
+            killRobot(ri.robot, 'pit');
         });
         animatePitDeath(robotsOnPits.map(ri => ri.robot), callback);
     } else {
@@ -264,10 +272,8 @@ function cleanupRound(model, callback) {
     }
 }
 
-
 function executeProgramm(model, step) {
     let done = true;
-    //TODO: fill with random commands if not filled correctly
     const nextCommands = model.robots
         .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
         .filter(robotCommand => robotCommand.commandCard !== undefined)
@@ -291,25 +297,38 @@ function executeProgramm(model, step) {
     };
 
     const moveWorld = function(callback) {
-        console.log('moveWorld');
-        robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
-            .forEach(rc => {
-                const vec = dir2Vec(rc.item.dir);
-                rc.robot.x += vec.x;
-                rc.robot.y += vec.y;
-                const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
-                if(conveyorTurn) {
-                    if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
-                    if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
-                }
-            });
-        animateConveyors();
-        updateRobot(model.robots, callback);
+        const moveConveyors = (callback) => {
+            robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
+                .forEach(rc => {
+                    const vec = dir2Vec(rc.item.dir);
+                    rc.robot.x += vec.x;
+                    rc.robot.y += vec.y;
+                    const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
+                    if(conveyorTurn) {
+                        if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
+                        if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                    }
+                });
+            animateConveyors();
+            updateRobot(model.robots, callback);
+        }
+
+        const turnGears = (callback) => {
+            robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
+                .forEach(rg => {
+                    if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
+                    if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
+                });
+            animateGears();
+            updateRobot(model.robots, callback);
+        }
+
+        moveConveyors(() => turnGears(callback));
     };
 
     const fireLasers = function(callback) {
         console.log('fireLasers');
-        const shots = model.robots
+        const beams = model.robots
             .filter(robot => !robot.death)
             .map(robot => {
                 const vec = dir2Vec(robot.dir);
@@ -325,27 +344,33 @@ function executeProgramm(model, step) {
                         itemsAt(model, shotX, shotY, WALL)[0] ||
                         robotAt(model, shotX, shotY);
                 }
-                const shot = {
+                const beam = {
                     from: robot,
                     to: target,
                     vec: vec,
                     distance: distance
                 };
-                //TODO: handle energy loss after animation
-                if(target.energy) {
-                    target.energy--;
-                }
-                return shot;
+                return beam;
             });
 
-        animateLaserFire(model, shots, callback);
-        //TODO: reduce energy
-        //if(target.type === ROBOT) {
-        //    target.energy--;
-        //}
-
-
-        //callback();
+        animateLaserFire(model, beams, () => {
+            //handle damage
+            const killedRobots = [];
+            beams.filter(beam => beam.to.energy)
+                .forEach(beam => {
+                    const target = beam.to;
+                    target.energy--;
+                    if(target.energy <=0 && !target.death) {
+                        killRobot(target, 'laser');
+                        killedRobots.push(target);
+                    }
+                });
+            if(killedRobots.length > 0) {
+                animateLaserDeath(killedRobots, callback);
+            } else {
+                callback();
+            }
+        });
     };
 
     const handleCheckpoints = function(callback) {
@@ -424,13 +449,26 @@ function startGame(gameModel, options) {
     });
 
     const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
+
+    //TODO: fill with random commands if not filled correctly
     executeBtn.addEventListener('click', () => executeProgramm(gameModel));
 
     nextRound(gameModel);
 }
 
+/*
+function pickRandomFromAvailable(robot) {
+    const numCommands = robot.availableCommands.length;
+    if(numCommands) {
+        const index = Math.floor(Math.random * numCommands);
+        return robot.availableCommands.splice(index, 1)[0];
+    }
+    return undefined; 
+}
+*/
+
 startGame(gameModel, {
-    numPlayers: 2, 
+    numPlayers: 4, 
     numCheckpoints: 3, 
     levelData: level1Data
 });

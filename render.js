@@ -121,9 +121,30 @@ function animateConveyors() {
     });
 }
 
+function animateGears() {
+    TweenLite.to('.gearLeft', animationDuration, {
+        rotation: '-=90',
+        ease: Sine.easeInOut
+    });
+    TweenLite.to('.gearRight', animationDuration, {
+        rotation: '+=90',
+        ease: Sine.easeInOut
+    });
+}
+
 function animatePitDeath(robots, callback) {
     robots.forEach((robot, index) => {
         const opts = {scale: 0.2, opacity: 0, rotation: robot.dir * 90 + 720};
+        if(index == 0) {
+            opts.onComplete = callback;
+        }
+        TweenLite.to(div(robot.id).get(), 1.5, opts);
+    });
+}
+
+function animateLaserDeath(robots, callback) {
+    robots.forEach((robot, index) => {
+        const opts = {scale: 1.5, opacity: 0, rotation: '+=360'};
         if(index == 0) {
             opts.onComplete = callback;
         }
@@ -151,7 +172,7 @@ function animateRespawn(robots, callback) {
 
 function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
-        const beam = tile(`shot${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'shot')
+        const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
             .appendTo(model.fieldElem).get();
 
         const isWall = shot.to.type === WALL;
