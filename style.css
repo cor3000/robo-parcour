@@ -29,11 +29,11 @@ body {
     background-size: 100%;
 }
 .tile.gearLeft {
-    background-image: url('img/gear.png');
+    background-image: url('img/gear-left.png');
     background-size: 100%;
 }
 .tile.gearRight {
-    background-image: url('img/gear.png');
+    background-image: url('img/gear-right.png');
     background-size: 100%;
 }
 .tile.conveyor {
