@@ -151,23 +151,30 @@ function animateRespawn(robots, callback) {
 
 function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
-        const bullet = tile(`shot${index}`, shot.from.x, shot.from.y, 'shot')
+        const beam = tile(`shot${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'shot')
             .appendTo(model.fieldElem).get();
+
+        const isWall = shot.to.type === WALL;
+        const isShort = shot.distance <= 1;
+        TweenLite.set(beam, {
+            rotation: shot.from.dir * 90,
+            scaleX: isShort ? (isWall ? 0.1 : 0.5) : 1
+        });
         const opts = {
-            x: shot.to.x * tileSize,
-            y: shot.to.y * tileSize
+            x: (shot.to.x - shot.vec.x * (isWall && !isShort ? 1 : 0.5)) * tileSize,
+            y: (shot.to.y - shot.vec.y * (isWall && !isShort ? 1 : 0.5)) * tileSize
         };
         if(index === 0) {
             opts.onComplete = () => {
-                bullet.parentElement.removeChild(bullet);
+                beam.parentElement.removeChild(beam);
                 callback();
             }
         } else {
             opts.onComplete = () => {
-                bullet.parentElement.removeChild(bullet);
+                beam.parentElement.removeChild(beam);
             };
         }
-        TweenLite.to(bullet, animationDuration, opts);
+        TweenLite.to(beam, animationDuration, opts);
     });
 };
 

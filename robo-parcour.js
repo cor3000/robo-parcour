@@ -316,7 +316,9 @@ function executeProgramm(model, step) {
                 let target = null;
                 let shotX = robot.x;
                 let shotY = robot.y;
+                let distance = 0;
                 while(!target) {
+                    distance++;
                     shotX += vec.x;
                     shotY += vec.y;
                     target = 
@@ -325,7 +327,9 @@ function executeProgramm(model, step) {
                 }
                 const shot = {
                     from: robot,
-                    to: target
+                    to: target,
+                    vec: vec,
+                    distance: distance
                 };
                 //TODO: handle energy loss after animation
                 if(target.energy) {
