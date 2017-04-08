@@ -132,23 +132,25 @@ function animateGears() {
     });
 }
 
-function animatePitDeath(robots, callback) {
-    robots.forEach((robot, index) => {
-        const opts = {scale: 0.2, opacity: 0, rotation: robot.dir * 90 + 720};
-        if(index == 0) {
-            opts.onComplete = callback;
-        }
-        TweenLite.to(div(robot.id).get(), 1.5, opts);
+function animatePitDeath(robots) {
+    return new Promise((resolve, reject) => {
+        if(robots.length) {
+            TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
+                scale: 0.2, opacity: 0.5, rotation: '+=720', 
+                onComplete: resolve
+            });
+        } else resolve();
     });
 }
 
-function animateLaserDeath(robots, callback) {
-    robots.forEach((robot, index) => {
-        const opts = {scale: 1.5, opacity: 0, rotation: '+=360'};
-        if(index == 0) {
-            opts.onComplete = callback;
-        }
-        TweenLite.to(div(robot.id).get(), 1.5, opts);
+function animateEnergyDeath(robots) {
+    return new Promise((resolve, reject) => {
+        if(robots.length) {
+            TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
+                scale: 1.5, opacity: 0.5, rotation: '+=360',
+                onComplete: resolve
+            });
+        } else resolve();
     });
 }
 

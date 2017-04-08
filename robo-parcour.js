@@ -124,8 +124,12 @@ function removeItem(model, item) {
     model.items.splice(model.items.indexOf(item), 1);
 }
 
+function aliveRobots(model) {
+    return model.robots.filter(robot => !robot.death);
+}
+
 function robotsOn(model, type) {
-    return model.robots
+    return aliveRobots(model)
         .map(r => { return {robot: r, item: itemsAt(model, r.x, r.y, type)[0]};})
         .filter(ri => ri.item);
 }
@@ -148,22 +152,31 @@ function tryMoveTo(model, robot, vec) {
     return [robot];
 }
 
-function killRobot(robot, reason) {
+function killRobot(death, robot) {
     robot.selectedCommands.length = 0;
-    robot.death = reason;
+    robot.death = death;
 }
 
 function checkPits(model, callback) {
-    const robotsOnPits = robotsOn(model, PIT);
-    if(robotsOnPits.length > 0) {
-        robotsOnPits.forEach(ri => {
-            killRobot(ri.robot, 'pit');
-        });
-        animatePitDeath(robotsOnPits.map(ri => ri.robot), callback);
-    } else {
-        callback();
-    }
+    const robotsOnPits = robotsOn(model, PIT)
+            .map(ri => ri.robot);
 
+    robotsOnPits.forEach(killRobot.bind(this, 'pit'));
+
+    animatePitDeath(robotsOnPits)
+        .then(callback);
+}
+
+function checkEnergy(model, callback) {
+    return new Promise((resolve, reject) => {
+        const deadRobots = aliveRobots(model)
+                .filter(robot => robot.energy <= 0);
+
+        deadRobots.forEach(killRobot.bind(this, 'energy'));
+
+        return animateEnergyDeath(deadRobots)
+                .then(resolve)
+    });
 }
 
 function move(model, robot, dist, callback) {
@@ -272,7 +285,7 @@ function cleanupRound(model, callback) {
     }
 }
 
-function executeProgramm(model, step) {
+function executeProgramm(model) {
     let done = true;
     const nextCommands = model.robots
         .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
@@ -352,7 +365,7 @@ function executeProgramm(model, step) {
                 };
                 return beam;
             });
-
+        
         animateLaserFire(model, beams, () => {
             //handle damage
             const killedRobots = [];
@@ -360,16 +373,8 @@ function executeProgramm(model, step) {
                 .forEach(beam => {
                     const target = beam.to;
                     target.energy--;
-                    if(target.energy <=0 && !target.death) {
-                        killRobot(target, 'laser');
-                        killedRobots.push(target);
-                    }
                 });
-            if(killedRobots.length > 0) {
-                animateLaserDeath(killedRobots, callback);
-            } else {
-                callback();
-            }
+            checkEnergy(model).then(callback);
         });
     };
 
