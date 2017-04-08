@@ -179,51 +179,55 @@ function checkEnergy(model, callback) {
     });
 }
 
-function move(model, robot, dist, callback) {
-    if(robot.death) {
-        callback();
-        return;
-    }
-    const vec = dir2Vec(robot.dir, dist);
-    const steps = Math.abs(dist);
-    const singleStep = function(steps) {
-        if(steps <= 0) {
-            callback();
-        } else {
-            const robotsToMove = tryMoveTo(model, robot, vec);
-            if(robotsToMove.length == 0) {
-                callback();
-                return;
-            }
-            robotsToMove.forEach(robotToMove => {
-                robotToMove.x += vec.x;
-                robotToMove.y += vec.y;
-            });
-            const nextStepCallback = () => singleStep(steps - 1);
-            updateRobot(robotsToMove, () => checkPits(model, nextStepCallback));
+function move(model, robot, dist) {
+    return new Promise((resolve, reject) => {
+        if(robot.death) {
+            resolve();
+            return;
         }
-    }
-    singleStep(steps);
+        const vec = dir2Vec(robot.dir, dist);
+        const steps = Math.abs(dist);
+        const singleStep = function(steps) {
+            if(steps <= 0) {
+                resolve();
+            } else {
+                const robotsToMove = tryMoveTo(model, robot, vec);
+                if(robotsToMove.length == 0) {
+                    resolve();
+                    return;
+                }
+                robotsToMove.forEach(robotToMove => {
+                    robotToMove.x += vec.x;
+                    robotToMove.y += vec.y;
+                });
+                const nextStepCallback = () => singleStep(steps - 1);
+                updateRobot(robotsToMove, () => checkPits(model, nextStepCallback));
+            }
+        }
+        singleStep(steps);
+    });
 }
 
 function turn(model, robot, speed, callback) {
-    if(robot.death) {
-        callback();
-        return;
-    }
-    robot.dir += speed;
-    updateRobot([robot], callback);
+    return new Promise((resolve, reject) => {
+        if(robot.death) {
+            resolve();
+            return;
+        }
+        robot.dir += speed;
+        updateRobot([robot], resolve);
+    });
 }
 
 function robotCommands(model, robot) {
     return {
-        forward1: (callback) => move(model, robot, 1, callback),
-        forward2: (callback) => move(model, robot, 2, callback),
-        forward3: (callback) => move(model, robot, 3, callback),
-        back1: (callback) => move(model, robot, -1, callback),
-        right: (callback) => turn(model, robot, 1, callback),
-        left: (callback) => turn(model, robot, -1, callback),
-        uturn: (callback) => turn(model, robot, 2, callback)
+        forward1: () => move(model, robot, 1),
+        forward2: () => move(model, robot, 2),
+        forward3: () => move(model, robot, 3),
+        back1: () => move(model, robot, -1),
+        right: () => turn(model, robot, 1),
+        left: () => turn(model, robot, -1),
+        uturn: () => turn(model, robot, 2)
     };
 }
 
@@ -297,120 +301,118 @@ function executeProgramm(model) {
         return;
     }
 
-    const executeCommands = function(robotCommands, callback) {
-        const robotCommand = robotCommands[0];
-        if(robotCommand) {
-            const commandName = robotCommand.commandCard.command;
-            robotCommand.robot.commandInterface[commandName](
-                () => executeCommands(robotCommands.slice(1), callback)
-            );
-        } else {
-            callback();
-        }
+    const executeCommands = function(robotCommands) {
+        return new Promise((resolve, reject) => {
+            const robotCommand = robotCommands[0];
+            if(robotCommand) {
+                const commandName = robotCommand.commandCard.command;
+                robotCommand.robot.commandInterface[commandName]()
+                        .then(() => executeCommands(robotCommands.slice(1)))
+                        .then(resolve);
+            } else resolve();
+       });
     };
 
-    const moveWorld = function(callback) {
-        const moveConveyors = (callback) => {
-            robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
-                .forEach(rc => {
-                    const vec = dir2Vec(rc.item.dir);
-                    rc.robot.x += vec.x;
-                    rc.robot.y += vec.y;
-                    const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
-                    if(conveyorTurn) {
-                        if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
-                        if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
-                    }
-                });
-            animateConveyors();
-            updateRobot(model.robots, callback);
-        }
+    const moveWorld = function() {
+        return new Promise((resolve, reject) => {
+            const moveConveyors = (callback) => {
+                robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
+                    .forEach(rc => {
+                        const vec = dir2Vec(rc.item.dir);
+                        rc.robot.x += vec.x;
+                        rc.robot.y += vec.y;
+                        const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
+                        if(conveyorTurn) {
+                            if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
+                            if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                        }
+                    });
 
-        const turnGears = (callback) => {
-            robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
-                .forEach(rg => {
-                    if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
-                    if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
-                });
-            animateGears();
-            updateRobot(model.robots, callback);
-        }
-
-        moveConveyors(() => turnGears(callback));
-    };
-
-    const fireLasers = function(callback) {
-        console.log('fireLasers');
-        const beams = model.robots
-            .filter(robot => !robot.death)
-            .map(robot => {
-                const vec = dir2Vec(robot.dir);
-                let target = null;
-                let shotX = robot.x;
-                let shotY = robot.y;
-                let distance = 0;
-                while(!target) {
-                    distance++;
-                    shotX += vec.x;
-                    shotY += vec.y;
-                    target = 
-                        itemsAt(model, shotX, shotY, WALL)[0] ||
-                        robotAt(model, shotX, shotY);
-                }
-                const beam = {
-                    from: robot,
-                    to: target,
-                    vec: vec,
-                    distance: distance
-                };
-                return beam;
-            });
-        
-        animateLaserFire(model, beams, () => {
-            //handle damage
-            const killedRobots = [];
-            beams.filter(beam => beam.to.energy)
-                .forEach(beam => {
-                    const target = beam.to;
-                    target.energy--;
-                });
-            checkEnergy(model).then(callback);
-        });
-    };
-
-    const handleCheckpoints = function(callback) {
-        console.log('handleCheckpoints');
-        robotsOn(model, [START, CHECKPOINT, REPAIR]).forEach(ri => {
-            const {item, robot} = ri;
-            ri.robot.respawnId = item.id;
-            if(item.type === CHECKPOINT) {
-                const oldCheckpointIndex = model.checkpoints.indexOf(robot.checkpointId);
-                const newCheckpointIndex = model.checkpoints.indexOf(item.id);
-                if(newCheckpointIndex - oldCheckpointIndex === 1) {
-                    robot.checkpointId = item.id;
-                    console.log(robot.id, 'reached', robot.checkpointId);
-                }
+                animateConveyors();
+                updateRobot(model.robots, callback);
             }
+
+            const turnGears = (callback) => {
+                robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
+                    .forEach(rg => {
+                        if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
+                        if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
+                    });
+                animateGears();
+                updateRobot(model.robots, callback);
+            }
+
+            moveConveyors(() => turnGears(resolve));
+            
         });
-        callback();
     };
 
-    const executeStepSequence = function(sequence) {
-        const next = sequence[0];
-        if(next) {
-            next(() => executeStepSequence(sequence.slice(1)));
-        } else {
-            setTimeout(() => executeProgramm(model), 1000);
-        }
+    const fireLasers = function() {
+        return new Promise((resolve, reject) => {
+            console.log('fireLasers');
+            const beams = model.robots
+                .filter(robot => !robot.death)
+                .map(robot => {
+                    const vec = dir2Vec(robot.dir);
+                    let target = null;
+                    let shotX = robot.x;
+                    let shotY = robot.y;
+                    let distance = 0;
+                    while(!target) {
+                        distance++;
+                        shotX += vec.x;
+                        shotY += vec.y;
+                        target = 
+                            itemsAt(model, shotX, shotY, WALL)[0] ||
+                            robotAt(model, shotX, shotY);
+                    }
+                    const beam = {
+                        from: robot,
+                        to: target,
+                        vec: vec,
+                        distance: distance
+                    };
+                    return beam;
+                });
+
+            animateLaserFire(model, beams, () => {
+                //handle damage
+                const killedRobots = [];
+                beams.filter(beam => beam.to.energy)
+                    .forEach(beam => {
+                        const target = beam.to;
+                        target.energy--;
+                    });
+                checkEnergy(model).then(resolve);
+            });
+
+        });
     };
 
-    executeStepSequence([
-        executeCommands.bind(this, nextCommands),
-        moveWorld, 
-        fireLasers, 
-        handleCheckpoints
-    ]);
+    const handleCheckpoints = () => {
+        return new Promise((resolve, reject) => {
+            console.log('handleCheckpoints');
+            robotsOn(model, [START, CHECKPOINT, REPAIR]).forEach(ri => {
+                const {item, robot} = ri;
+                ri.robot.respawnId = item.id;
+                if(item.type === CHECKPOINT) {
+                    const oldCheckpointIndex = model.checkpoints.indexOf(robot.checkpointId);
+                    const newCheckpointIndex = model.checkpoints.indexOf(item.id);
+                    if(newCheckpointIndex - oldCheckpointIndex === 1) {
+                        robot.checkpointId = item.id;
+                        console.log(robot.id, 'reached', robot.checkpointId);
+                    }
+                }
+            });
+            resolve();
+        })
+    };
 
+    executeCommands(nextCommands)
+        .then(handleCheckpoints)
+        .then(moveWorld)
+        .then(fireLasers)
+        .then(() => setTimeout(() => executeProgramm(model), 1000));
 }
 
 
