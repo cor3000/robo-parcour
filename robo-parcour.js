@@ -157,14 +157,16 @@ function killRobot(death, robot) {
     robot.death = death;
 }
 
-function checkPits(model, callback) {
-    const robotsOnPits = robotsOn(model, PIT)
-            .map(ri => ri.robot);
+function checkPits(model) {
+    return new Promise((resolve, reject) => {
+        const robotsOnPits = robotsOn(model, PIT)
+                .map(ri => ri.robot);
 
-    robotsOnPits.forEach(killRobot.bind(this, 'pit'));
+        robotsOnPits.forEach(killRobot.bind(this, 'pit'));
 
-    animatePitDeath(robotsOnPits)
-        .then(callback);
+        animatePitDeath(robotsOnPits)
+            .then(resolve);
+    });
 }
 
 function checkEnergy(model, callback) {
@@ -201,7 +203,9 @@ function move(model, robot, dist) {
                     robotToMove.y += vec.y;
                 });
                 const nextStepCallback = () => singleStep(steps - 1);
-                updateRobot(robotsToMove, () => checkPits(model, nextStepCallback));
+                updateRobot(robotsToMove)
+                    .then(() => checkPits(model))
+                    .then(nextStepCallback);
             }
         }
         singleStep(steps);
@@ -215,7 +219,8 @@ function turn(model, robot, speed, callback) {
             return;
         }
         robot.dir += speed;
-        updateRobot([robot], resolve);
+        updateRobot([robot])
+            .then(resolve);
     });
 }
 
@@ -315,35 +320,41 @@ function executeProgramm(model) {
 
     const moveWorld = function() {
         return new Promise((resolve, reject) => {
-            const moveConveyors = (callback) => {
-                robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
-                    .forEach(rc => {
-                        const vec = dir2Vec(rc.item.dir);
-                        rc.robot.x += vec.x;
-                        rc.robot.y += vec.y;
-                        const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
-                        if(conveyorTurn) {
-                            if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
-                            if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
-                        }
-                    });
+            const moveConveyors = () => {
+                return new Promise((resolve, reject) => {
+                    robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
+                        .forEach(rc => {
+                            const vec = dir2Vec(rc.item.dir);
+                            rc.robot.x += vec.x;
+                            rc.robot.y += vec.y;
+                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
+                            if(conveyorTurn) {
+                                if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                            }
+                        });
 
-                animateConveyors();
-                updateRobot(model.robots, callback);
-            }
+                    animateConveyors();
+                    updateRobot(model.robots).then(resolve);
+                });
+            };
 
-            const turnGears = (callback) => {
-                robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
-                    .forEach(rg => {
-                        if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
-                        if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
-                    });
-                animateGears();
-                updateRobot(model.robots, callback);
-            }
+            const turnGears = () => {
+                return new Promise((resolve, reject) => {
+                    robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
+                        .forEach(rg => {
+                            if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
+                            if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
+                        });
+                    animateGears();
+                    updateRobot(model.robots).then(resolve);
+                });
+            };
 
-            moveConveyors(() => turnGears(resolve));
-            
+            moveConveyors()
+                .then(turnGears)
+                .then(resolve);
+
         });
     };
 
@@ -475,7 +486,7 @@ function pickRandomFromAvailable(robot) {
 */
 
 startGame(gameModel, {
-    numPlayers: 2, 
+    numPlayers: 4, 
     numCheckpoints: 3, 
     levelData: level1Data
 });

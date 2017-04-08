@@ -88,18 +88,18 @@ function renderRobot(model, robot) {
         .appendTo(model.fieldElem);
 }
 
-function updateRobot(robots, callback) {
-    robots.forEach((robot, index) => {
-        const opts = {
-                x: robot.x * tileSize, 
-                y: robot.y * tileSize, 
-                rotation: robot.dir * 90,
-                ease: Sine.easeInOut
-               };
-        if(index == 0) {
-            opts.onComplete = callback;
-        }
-        TweenLite.to(div(robot.id).get(), animationDuration, opts);
+function updateRobot(robots) {
+    return new Promise((resolve, reject) => {
+        const anim = new TimelineLite({onComplete: resolve});
+        robots.forEach((robot, index) => {
+            const opts = {
+                    x: robot.x * tileSize, 
+                    y: robot.y * tileSize, 
+                    rotation: robot.dir * 90,
+                    ease: Sine.easeInOut
+                   };
+            anim.add(TweenLite.to(div(robot.id).get(), animationDuration, opts), 0);
+        });
     });
 }
 
