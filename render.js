@@ -51,6 +51,13 @@ function div(id) {
             return ops;
         },
 
+        insertBefore: (parent, before) => {
+            if(parent !== elem.parent) {
+                parent.insertBefore(elem, before);
+            }
+            return ops;
+        },
+
         clear: () => {
             while (elem.hasChildNodes()) {
                 elem.removeChild(elem.lastChild);
@@ -75,7 +82,11 @@ function commandCard(id, status, command) {
 
 function initField(model) {
     const fieldElem = div('field').withClass('field').appendTo(document.body).get();
-    model.fieldElem = fieldElem;
+    const wallsElem = div('walls').withClass('walls').appendTo(fieldElem).get();
+    const itemsElem = div('items').withClass('items').appendTo(fieldElem).get();
+    model.fieldElemId = fieldElem.id;
+    model.wallsElemId = wallsElem.id;
+    model.itemsElemId = itemsElem.id;
 }
 
 function initCommands(model, robot) {
@@ -85,7 +96,7 @@ function initCommands(model, robot) {
 function renderRobot(model, robot) {
     tile(robot.id, robot.x, robot.y, 'robot')
         .rot(robot.dir * 90)
-        .appendTo(model.fieldElem);
+        .appendTo(div(model.itemsElemId).get());
 }
 
 function updateRobot(robots) {
@@ -175,7 +186,7 @@ function animateRespawn(robots, callback) {
 function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
         const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
-            .appendTo(model.fieldElem).get();
+            .appendTo(div(model.itemsElemId).get()).get();
 
         const isCrate = shot.to.type === CRATE;
         const isShort = shot.distance <= 1;
@@ -202,18 +213,29 @@ function animateLaserFire(model, shots, callback) {
 };
 
 function renderField(model) {
+    const fieldElem = div(model.fieldElemId).get();
+    const itemsElem = div(model.itemsElemId).get();
+    const wallsElem = div(model.wallsElemId).get();
     model.items.forEach(item => {
         const col = item.x;
         const row = item.y;
-        const domId = `tile_${item.type}_${row}_${col}`;
-        const styleClass = item.type + 
+        const type = item.type;
+        const domId = `tile_${type}_${row}_${col}`;
+        const styleClass = type + 
             (item.ownerId ? ` ${item.ownerId}` : '');
         const fieldTile = tile(domId, col, row, styleClass)
             .rot(item.dir * 90);
-        if(item.type === CHECKPOINT && item.index >= 0) {
+        if(type === CHECKPOINT && item.index >= 0) {
             fieldTile.attr('data-checkpoint-index', item.index + 1);
         }
-        fieldTile.appendTo(model.fieldElem);
+
+        if(type === WALL || type === CRATE) {
+            fieldTile.appendTo(wallsElem);
+        } else if(type === PIT || type === START) {
+            fieldTile.insertBefore(fieldElem, wallsElem);
+        } else {
+            fieldTile.appendTo(itemsElem);
+        }
         if(item.type === CONVEYOR_LEFT_TURN || item.type === CONVEYOR_RIGHT_TURN) {
             div(domId + '-bg').withClass('bg').appendTo(fieldTile.get());
         }

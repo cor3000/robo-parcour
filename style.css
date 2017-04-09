@@ -9,8 +9,16 @@ body {
     margin: 15px;
     width: 600px;
     height: 400px;
-    background-image: url('img/metal_floor.jpg');
+    background-image: url('img/metal-floor.png');
     background-size: 8.33333333%;
+}
+
+.walls {
+	filter: drop-shadow(5px 5px 2px black);
+}
+
+.items {
+	filter: drop-shadow(2px 2px 1px black)
 }
 
 .tile {
@@ -81,17 +89,21 @@ body {
     background-size: 100%;
     border-radius: 5px;
     border: 1px solid black;
-    box-shadow: 13px 13px 30px 0px black
 }
+
+.tile.start {
+    background-image: url('img/start.png');
+    background-size: 97%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .tile.start:before {
     position: absolute;
-    left: 0px;
-    right: 0px;
-	top: 0px;
-	bottom: 0px;
-    text-align: center;
+    left: 4px;
+    top: -3px;
     font-size: 50px;
-	content: '\27A7';
+	content: '\2022';
 }
 .tile.repair {
     background-image: url('img/wrench.png');

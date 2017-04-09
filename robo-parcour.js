@@ -54,7 +54,7 @@ const level1Data = {
         61: REPAIR,
     },
     tileData: [
-        [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [ 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1],
         [ 1, 0,50, 0, 0, 0, 5,60, 0,61, 0, 1],
         [ 1, 0, 0, 0, 2,25,22,22,26, 4,60, 1],
         [ 1,50, 0,25,22,30,60,16,23,60, 0, 1],
@@ -430,7 +430,7 @@ function executeProgramm(model) {
     executeCommands(nextCommands)
         .then(handleCheckpoints)
         .then(moveWorld)
-        .then(fireLasers)
+        //.then(fireLasers)
         .then(() => setTimeout(() => executeProgramm(model), 1000));
 }
 
