@@ -18,6 +18,20 @@ body {
     position: absolute;
 }
 
+.tile.wall:before {
+	margin-right: -5%;
+	content: ' ';
+	position: absolute;
+    left: 0px;
+    right: 0px;
+	top: 0px;
+	bottom: 0px;
+    background-image: url('img/wall.png');
+    background-size: 10% 100%;
+    background-position: right;
+    background-repeat: no-repeat;
+}
+
 .tile.beam {
     background-image: url('img/laser-red.png');
     background-size: 100%;
@@ -62,7 +76,7 @@ body {
 	left: 0;
 	background-image: url('img/conveyor-turn-right.png');
 }
-.tile.wall {
+.tile.crate {
     background-image: url('img/crate.png');
     background-size: 100%;
     border-radius: 5px;
@@ -134,7 +148,9 @@ body {
 
 
 .tile.robot {
-    background-size: 100%;
+    background-size: 95%;
+    background-repeat: no-repeat;
+    background-position: center center;
 }
 .tile#robot0 {
     background-image: url('img/robot_1.png');
@@ -243,4 +259,3 @@ body {
     color: yellow;
     cursor: pointer;
     text-align: center;
-}

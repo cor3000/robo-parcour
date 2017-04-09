@@ -177,15 +177,15 @@ function animateLaserFire(model, shots, callback) {
         const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
             .appendTo(model.fieldElem).get();
 
-        const isWall = shot.to.type === WALL;
+        const isCrate = shot.to.type === CRATE;
         const isShort = shot.distance <= 1;
         TweenLite.set(beam, {
             rotation: shot.from.dir * 90,
-            scaleX: isShort ? (isWall ? 0.1 : 0.5) : 1
+            scaleX: isShort ? (isCrate ? 0.1 : 0.5) : 1
         });
         const opts = {
-            x: (shot.to.x - shot.vec.x * (isWall && !isShort ? 1 : 0.5)) * tileSize,
-            y: (shot.to.y - shot.vec.y * (isWall && !isShort ? 1 : 0.5)) * tileSize
+            x: (shot.to.x - shot.vec.x * (isCrate && !isShort ? 1 : 0.5)) * tileSize,
+            y: (shot.to.y - shot.vec.y * (isCrate && !isShort ? 1 : 0.5)) * tileSize
         };
         if(index === 0) {
             opts.onComplete = () => {

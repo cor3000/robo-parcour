@@ -5,6 +5,7 @@ function nextId() {
 
 const ROBOT = 'robot';
 const START = 'start';
+const CRATE = 'crate';
 const WALL = 'wall';
 const PIT = 'pit';
 const CHECKPOINT = 'checkpoint';
@@ -24,12 +25,15 @@ const level1Data = {
     },
     tiles: {
         0: 'empty',
-        1: WALL, 
+        1: CRATE, 
         2: PIT, 
-        3: REPAIR,
-        4: 'spike',
-        5: GEAR_LEFT_TURN,
-        6: GEAR_RIGHT_TURN,
+        3: `${WALL}-right`,
+        4: `${WALL}-down`,
+        5: `${WALL}-left`,
+        6: `${WALL}-up`,
+        14: 'spike',
+        15: GEAR_LEFT_TURN,
+        16: GEAR_RIGHT_TURN,
         20: `${CONVEYOR}-right`,
         21: `${CONVEYOR}-down`,
         22: `${CONVEYOR}-left`,
@@ -43,22 +47,26 @@ const level1Data = {
         30: `${CONVEYOR_RIGHT_TURN}-left`,
         31: `${CONVEYOR_RIGHT_TURN}-up`,
         50: `${START}-right`,
-        51: `${START}--down`,
+        51: `${START}-down`,
         52: `${START}-left`,
-        53: `${START}--up`,
-        60: CHECKPOINT
+        53: `${START}-up`,
+        60: CHECKPOINT,
+        61: REPAIR,
     },
     tileData: [
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [ 1, 0,50, 0, 0, 0, 0,60, 0, 3, 0, 1],
-        [ 1, 0, 0, 0, 2,25,22,22,26, 1,60, 1],
-        [ 1,50, 0,25,22,30,60, 6,23,60, 0, 1],
-        [ 1,50, 0,24,20,29, 2, 5,23, 6, 2, 1],
-        [ 1, 0, 0, 0, 5,24,20,20,27, 0, 0, 1],
-        [ 1, 0,50, 0, 3, 0, 0,60, 1, 0,60, 1],
+        [ 1, 0,50, 0, 0, 0, 5,60, 0,61, 0, 1],
+        [ 1, 0, 0, 0, 2,25,22,22,26, 4,60, 1],
+        [ 1,50, 0,25,22,30,60,16,23,60, 0, 1],
+        [ 1,50, 0,24,20,29, 2,15,23,16, 2, 1],
+        [ 1, 0, 0, 0,15,24,20,20,27, 0, 0, 1],
+        [ 1, 0,50, 0,61, 0, 0,60, 3, 0,60, 1],
         [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
     ], 
-    items : [
+    extraTiles : [
+        {x: 1, y: 1, tileName: `${WALL}-left`},
+        {x: 1, y: 3, tileName: `${WALL}-down`},
+        {x: 1, y: 4, tileName: `${WALL}-up`}
     ]
 };
 
@@ -70,23 +78,23 @@ const gameModel = {
 
 function initGameModel(model, levelData) {
     const items = [];
+    const createItem = ({x, y, tileName}) => {
+        const typeAndDir = tileName.split('-');
+        const type = typeAndDir[0];
+        const dir = typeAndDir[1] ? levelData.dirs[typeAndDir[1]] : 0;
+        items.push({
+            id: type + '-' + nextId(),
+            type, x, y, dir
+        });
+    };
     levelData.tileData.forEach((row, y) => {
         row.forEach((tileId, x) => {
             if(tileId !== 0 /*empty*/) {
-                const typeAndDir = levelData.tiles[tileId].split('-');
-                const type = typeAndDir[0];
-                const dir = typeAndDir[1] ? levelData.dirs[typeAndDir[1]] : 0;
-                items.push({
-                    id: type + '-' + nextId(),
-                    typeId: tileId,
-                    type: type,
-                    x: x,
-                    y: y,
-                    dir: dir
-                });
+                createItem({x, y, tileName: levelData.tiles[tileId]});
             }
         });
     });
+    levelData.extraTiles.forEach(createItem);
     model.items = items;
 }
 
@@ -137,7 +145,7 @@ function robotsOn(model, type) {
 function tryMoveTo(model, robot, vec) {
     const newX = Math.round(robot.x + vec.x);
     const newY = Math.round(robot.y + vec.y);
-    if(itemsAt(model, newX, newY, 'wall')[0] /*is wall*/) {
+    if(itemsAt(model, newX, newY, CRATE)[0] /*is CRATE*/) {
         return [];
     };
     const robotToPush = robotAt(model, newX, newY);
@@ -374,7 +382,7 @@ function executeProgramm(model) {
                         shotX += vec.x;
                         shotY += vec.y;
                         target = 
-                            itemsAt(model, shotX, shotY, WALL)[0] ||
+                            itemsAt(model, shotX, shotY, CRATE)[0] ||
                             robotAt(model, shotX, shotY);
                     }
                     const beam = {
@@ -486,7 +494,7 @@ function pickRandomFromAvailable(robot) {
 */
 
 startGame(gameModel, {
-    numPlayers: 4, 
+    numPlayers: 2, 
     numCheckpoints: 3, 
     levelData: level1Data
 });
