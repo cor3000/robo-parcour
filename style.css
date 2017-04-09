@@ -17,9 +17,11 @@ body {
 	filter: drop-shadow(5px 5px 2px black);
 }
 
+/*
 .items {
 	filter: drop-shadow(2px 2px 1px black)
 }
+*/
 
 .tile {
     box-sizing: border-box;

@@ -53,23 +53,33 @@ const level1Data = {
         60: CHECKPOINT,
         61: REPAIR,
     },
-    tileData: [
-        [ 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3],
-        [ 5, 1,50, 0, 0, 0, 5,60, 0,61, 0, 3],
-        [ 5, 0, 0, 0, 2,25,22,22,26, 4,60, 3],
-        [ 5,50, 0,25,22,30,60,16,23,60, 0, 3],
-        [ 5,50, 0,24,20,29, 2,15,23,16, 2, 3],
-        [ 5, 0, 0, 0,15,24,20,20,27, 0, 0, 3],
-        [ 5, 1,50, 0,61, 0, 0,60, 3, 0,60, 3],
-        [ 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3]
-    ], 
+    items: {
+        walls: [
+            [ 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3],
+            [ 5, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3],
+            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 3],
+            [ 5, 4, 0, 0, 0, 4, 0, 0, 0, 0, 3, 3],
+            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3],
+            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3],
+            [ 5, 1, 0, 0, 0, 0, 3, 0, 0, 5, 0, 3],
+            [ 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3]
+        ], 
+        items: [
+            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+            [ 0, 0,50, 0, 0, 0, 5,60, 0,61, 0, 0],
+            [ 0, 0, 0, 0, 2,25,22,22,26, 4, 0,60],
+            [ 0,50, 0,25,22,30,60,16,23,60, 0, 0],
+            [ 0,50, 0,24,20,29, 2,15,23,16, 2, 0],
+            [ 0, 0, 0, 0,15,24,20,20,27, 0, 0, 0],
+            [ 0, 0,50, 0,61, 0, 0,60, 3, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,60, 0]
+        ]
+    }, 
     extraTiles : [
         {x: 0, y: 0, tileName: `${WALL}-up`},
         {x: 0, y: 7, tileName: `${WALL}-down`},
         {x: 11, y: 0, tileName: `${WALL}-up`},
         {x: 11, y: 7, tileName: `${WALL}-down`},
-        {x: 1, y: 3, tileName: `${WALL}-down`},
-        {x: 1, y: 4, tileName: `${WALL}-up`}
     ]
 };
 
@@ -90,13 +100,15 @@ function initGameModel(model, levelData) {
             type, x, y, dir
         });
     };
-    levelData.tileData.forEach((row, y) => {
-        row.forEach((tileId, x) => {
-            if(tileId !== 0 /*empty*/) {
-                createItem({x, y, tileName: levelData.tiles[tileId]});
-            }
+    for(layer in levelData.items) {
+        levelData.items[layer].forEach((row, y) => {
+            row.forEach((tileId, x) => {
+                if(tileId !== 0 /*empty*/) {
+                    createItem({x, y, tileName: levelData.tiles[tileId]});
+                }
+            });
         });
-    });
+    }
     levelData.extraTiles.forEach(createItem);
     model.items = items;
 }
@@ -162,12 +174,7 @@ function isWayBlocked(model, pos, vec) {
 }
 
 function tryMoveTo(model, robot, vec) {
-    if(isWayBlocked(model, robot, vec)) {
-        return [];
-    }
-    //if(itemsAt(model, newX, newY, CRATE)[0] /*is CRATE*/) {
-    //    return [];
-    //};
+    if(isWayBlocked(model, robot, vec)) return [];
     const newX = Math.round(robot.x + vec.x);
     const newY = Math.round(robot.y + vec.y);
     const robotToPush = robotAt(model, newX, newY);
@@ -213,14 +220,11 @@ function checkEnergy(model, callback) {
 
 function move(model, robot, dist) {
     return new Promise((resolve, reject) => {
-        if(robot.death) {
-            resolve();
-            return;
-        }
         const vec = dir2Vec(robot.dir, dist);
         const steps = Math.abs(dist);
+        
         const singleStep = function(steps) {
-            if(steps <= 0) {
+            if(robot.death || steps <= 0) {
                 resolve();
             } else {
                 const robotsToMove = tryMoveTo(model, robot, vec);
@@ -232,10 +236,9 @@ function move(model, robot, dist) {
                     robotToMove.x += vec.x;
                     robotToMove.y += vec.y;
                 });
-                const nextStepCallback = () => singleStep(steps - 1);
                 updateRobot(robotsToMove)
                     .then(() => checkPits(model))
-                    .then(nextStepCallback);
+                    .then(() => singleStep(steps - 1));
             }
         }
         singleStep(steps);
@@ -396,20 +399,17 @@ function executeProgramm(model) {
                 .map(robot => {
                     const vec = dir2Vec(robot.dir);
                     let target = null;
-                    let shotX = robot.x;
-                    let shotY = robot.y;
+                    const path = {x: robot.x, y: robot.y};
                     let distance = 0;
-                    while(!target) {
+                    while(!isWayBlocked(model, path, vec) && !target) {
                         distance++;
-                        shotX += vec.x;
-                        shotY += vec.y;
-                        target = 
-                            itemsAt(model, shotX, shotY, CRATE)[0] ||
-                            robotAt(model, shotX, shotY);
+                        path.x += vec.x;
+                        path.y += vec.y;
+                        target = robotAt(model, path.x, path.y);
                     }
                     const beam = {
                         from: robot,
-                        to: target,
+                        to: target || path,
                         vec: vec,
                         distance: distance
                     };
@@ -452,7 +452,7 @@ function executeProgramm(model) {
     executeCommands(nextCommands)
         .then(handleCheckpoints)
         .then(moveWorld)
-        //.then(fireLasers)
+        .then(fireLasers)
         .then(() => setTimeout(() => executeProgramm(model), 1000));
 }
 
