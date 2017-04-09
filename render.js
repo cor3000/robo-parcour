@@ -220,7 +220,7 @@ function renderField(model) {
         const col = item.x;
         const row = item.y;
         const type = item.type;
-        const domId = `tile_${type}_${row}_${col}`;
+        const domId = `tile_${type}_${item.id}`;
         const styleClass = type + 
             (item.ownerId ? ` ${item.ownerId}` : '');
         const fieldTile = tile(domId, col, row, styleClass)

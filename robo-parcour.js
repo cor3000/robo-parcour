@@ -54,17 +54,20 @@ const level1Data = {
         61: REPAIR,
     },
     tileData: [
-        [ 1, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 1],
-        [ 1, 0,50, 0, 0, 0, 5,60, 0,61, 0, 1],
-        [ 1, 0, 0, 0, 2,25,22,22,26, 4,60, 1],
-        [ 1,50, 0,25,22,30,60,16,23,60, 0, 1],
-        [ 1,50, 0,24,20,29, 2,15,23,16, 2, 1],
-        [ 1, 0, 0, 0,15,24,20,20,27, 0, 0, 1],
-        [ 1, 0,50, 0,61, 0, 0,60, 3, 0,60, 1],
-        [ 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+        [ 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3],
+        [ 5, 1,50, 0, 0, 0, 5,60, 0,61, 0, 3],
+        [ 5, 0, 0, 0, 2,25,22,22,26, 4,60, 3],
+        [ 5,50, 0,25,22,30,60,16,23,60, 0, 3],
+        [ 5,50, 0,24,20,29, 2,15,23,16, 2, 3],
+        [ 5, 0, 0, 0,15,24,20,20,27, 0, 0, 3],
+        [ 5, 1,50, 0,61, 0, 0,60, 3, 0,60, 3],
+        [ 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3]
     ], 
     extraTiles : [
-        {x: 1, y: 1, tileName: `${WALL}-left`},
+        {x: 0, y: 0, tileName: `${WALL}-up`},
+        {x: 0, y: 7, tileName: `${WALL}-down`},
+        {x: 11, y: 0, tileName: `${WALL}-up`},
+        {x: 11, y: 7, tileName: `${WALL}-down`},
         {x: 1, y: 3, tileName: `${WALL}-down`},
         {x: 1, y: 4, tileName: `${WALL}-up`}
     ]
@@ -106,6 +109,10 @@ function dir2Vec(dir, dist) {
     }
 }
 
+function vec2Dir(vec) {
+    return Math.round((Math.atan2(vec.y, vec.x) / Math.PI * 2 + 4)) % 4;
+}
+
 function objectsAt(objList, x, y) {
     return objList.filter(obj => obj.x === x && obj.y === y);
 }
@@ -142,12 +149,27 @@ function robotsOn(model, type) {
         .filter(ri => ri.item);
 }
 
+function isWayBlocked(model, pos, vec) {
+    const newX = Math.round(pos.x + vec.x);
+    const newY = Math.round(pos.y + vec.y);
+    const dir = vec2Dir(vec);
+    if(itemsAt(model, newX, newY, CRATE)[0]) return true;
+    const wallsAtPos = itemsAt(model, pos.x, pos.y, WALL);
+    if(wallsAtPos.find(wall => wall.dir === dir)) return true;
+    const wallsAtNewPos = itemsAt(model, newX, newY, WALL);
+    if(wallsAtNewPos.find(wall => wall.dir === ((dir + 2) % 4))) return true;
+    return false;
+}
+
 function tryMoveTo(model, robot, vec) {
+    if(isWayBlocked(model, robot, vec)) {
+        return [];
+    }
+    //if(itemsAt(model, newX, newY, CRATE)[0] /*is CRATE*/) {
+    //    return [];
+    //};
     const newX = Math.round(robot.x + vec.x);
     const newY = Math.round(robot.y + vec.y);
-    if(itemsAt(model, newX, newY, CRATE)[0] /*is CRATE*/) {
-        return [];
-    };
     const robotToPush = robotAt(model, newX, newY);
     if(robotToPush) {
         robotsToPush = tryMoveTo(model, robotToPush, vec);

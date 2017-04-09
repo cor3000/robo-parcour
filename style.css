@@ -87,8 +87,9 @@ body {
 .tile.crate {
     background-image: url('img/crate.png');
     background-size: 100%;
-    border-radius: 5px;
-    border: 1px solid black;
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    border: 2px solid transparent
 }
 
 .tile.start {
@@ -112,12 +113,12 @@ body {
 
 .tile.checkpoint {
     background-image: url('img/wrench.png');
+    background-repeat: no-repeat;
     background-size: 100%;
 }
 
 .tile.checkpoint[data-checkpoint-index] {
     background-size: 70%;
-    background-repeat: no-repeat;
     background-position: bottom right;
 }
 
@@ -129,6 +130,7 @@ body {
     bottom: 0px;
     background-image: url('img/checkpoint.png');
     background-size: 100%; 
+    background-repeat: no-repeat;
     content: ' ';
 	transform: rotate(-18deg)
 }
