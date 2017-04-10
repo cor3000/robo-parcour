@@ -178,7 +178,7 @@ function tryMoveTo(model, robot, vec) {
     const newX = Math.round(robot.x + vec.x);
     const newY = Math.round(robot.y + vec.y);
     const robotToPush = robotAt(model, newX, newY);
-    if(robotToPush) {
+    if(robotToPush && !robotToPush.death) {
         robotsToPush = tryMoveTo(model, robotToPush, vec);
         if(robotsToPush.length > 0) {
             return robotsToPush.concat(robot);
@@ -488,6 +488,9 @@ function startGame(gameModel, options) {
     }
     //remove unused checkpoints
     checkpoints.forEach(cp => removeItem(gameModel, cp));
+    //remove unused starts
+    starts.filter(st => !st.ownerId)
+          .forEach(st => removeItem(gameModel, st));
 
     initField(gameModel);
     renderField(gameModel);

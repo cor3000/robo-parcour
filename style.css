@@ -13,16 +13,14 @@ body {
     background-size: 8.33333333%;
 }
 
-.walls {
+.walls.shadows {
 	filter: drop-shadow(5px 5px 2px black);
 }
-
 /*
-.items {
+.items.shadows {
 	filter: drop-shadow(2px 2px 1px black)
 }
 */
-
 .tile {
     box-sizing: border-box;
     position: absolute;
@@ -32,10 +30,10 @@ body {
 	margin-right: -5%;
 	content: ' ';
 	position: absolute;
-    left: 0px;
-    right: 0px;
-	top: 0px;
-	bottom: 0px;
+    left: 0;
+    right: 0;
+	top: 0;
+	bottom: 0;
     background-image: url('img/wall.png');
     background-size: 10% 100%;
     background-position: right;
@@ -94,20 +92,6 @@ body {
     border: 2px solid transparent
 }
 
-.tile.start {
-    background-image: url('img/start.png');
-    background-size: 97%;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-
-.tile.start:before {
-    position: absolute;
-    left: 4px;
-    top: -3px;
-    font-size: 50px;
-	content: '\2022';
-}
 .tile.repair {
     background-image: url('img/wrench.png');
     background-size: 100%;
@@ -149,6 +133,50 @@ body {
 	transform: rotate(-25deg)
 }
 
+.tile.start {
+    background-image: url('img/start.png');
+    background-size: 97%;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.tile.start:after {
+    content: ' ';
+    position: absolute;
+    left: 5%;
+    top: 30%;
+    bottom: 30%;
+    right: 55%;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    opacity: 1;
+}
+
+.tile.robot {
+    background-size: 95%;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+.tile.robot0::after,
+.tile#robot0 {
+    background-image: url('img/robot_1.png');
+}
+.tile.robot1::after,
+.tile#robot1 {
+    background-image: url('img/robot_2.png');
+}
+.tile.robot2::after,
+.tile#robot2 {
+    background-image: url('img/robot_3.png');
+}
+.tile.robot3::after,
+.tile#robot3 {
+    background-image: url('img/robot_4.png');
+}
+
+
+
+
 .robot0 {
 	color: green;
 }
@@ -161,32 +189,6 @@ body {
 .robot3 {
 	color: darkgoldenrod;
 }
-
-
-.tile.robot {
-    background-size: 95%;
-    background-repeat: no-repeat;
-    background-position: center center;
-}
-.tile#robot0 {
-    background-image: url('img/robot_1.png');
-}
-.tile#robot1 {
-    background-image: url('img/robot_2.png');
-}
-.tile#robot2 {
-    background-image: url('img/robot_3.png');
-}
-.tile#robot3 {
-    background-image: url('img/robot_4.png');
-}
-
-
-
-
-
-
-
 
 
 
@@ -275,3 +277,4 @@ body {
     color: yellow;
     cursor: pointer;
     text-align: center;
+}

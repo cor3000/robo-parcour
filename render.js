@@ -82,8 +82,8 @@ function commandCard(id, status, command) {
 
 function initField(model) {
     const fieldElem = div('field').withClass('field').appendTo(document.body).get();
-    const wallsElem = div('walls').withClass('walls').appendTo(fieldElem).get();
-    const itemsElem = div('items').withClass('items').appendTo(fieldElem).get();
+    const wallsElem = div('walls').withClass('walls shadows').appendTo(fieldElem).get();
+    const itemsElem = div('items').withClass('items shadows').appendTo(fieldElem).get();
     model.fieldElemId = fieldElem.id;
     model.wallsElemId = wallsElem.id;
     model.itemsElemId = itemsElem.id;
@@ -189,10 +189,10 @@ function animateLaserFire(model, shots, callback) {
             .appendTo(div(model.itemsElemId).get()).get();
 
         const isRobot = shot.to.type === ROBOT;
-        const isShort = shot.distance <= 0;
+        const isShort = shot.distance <= (isRobot ? 1 : 0);
         TweenLite.set(beam, {
             rotation: shot.from.dir * 90,
-            scaleX: isShort ? (isRobot ? 0.5 : 0.1) : 1
+            scaleX: isShort ? (isRobot ? 0.5 : 0.15) : 1
         });
         const opts = {
             x: (shot.to.x - shot.vec.x * (isRobot ? 0.5 : (isShort ? -0.5 : 0))) * tileSize,
