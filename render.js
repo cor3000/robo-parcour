@@ -186,7 +186,7 @@ function animateRespawn(robots, callback) {
 function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
         const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
-            .appendTo(div(model.itemsElemId).get()).get();
+            .appendTo(div(model.fieldElemId).get()).get();
 
         const isRobot = shot.to.type === ROBOT;
         const isShort = shot.distance <= (isRobot ? 1 : 0);

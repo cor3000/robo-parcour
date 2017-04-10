@@ -10,16 +10,16 @@ body {
     width: 600px;
     height: 400px;
     background-image: url('img/metal-floor.png');
-    background-size: 8.33333333%;
+    background-size: 8.33334%;
 }
 
 .walls.shadows {
 	filter: drop-shadow(5px 5px 2px black);
 }
-/*
 .items.shadows {
 	filter: drop-shadow(2px 2px 1px black)
 }
+/*
 */
 .tile {
     box-sizing: border-box;
