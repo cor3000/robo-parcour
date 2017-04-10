@@ -394,9 +394,7 @@ function executeProgramm(model) {
     const fireLasers = function() {
         return new Promise((resolve, reject) => {
             console.log('fireLasers');
-            const beams = model.robots
-                .filter(robot => !robot.death)
-                .map(robot => {
+            const beams = aliveRobots(model).map(robot => {
                     const vec = dir2Vec(robot.dir);
                     let target = null;
                     const path = {x: robot.x, y: robot.y};
@@ -416,17 +414,20 @@ function executeProgramm(model) {
                     return beam;
                 });
 
-            animateLaserFire(model, beams, () => {
-                //handle damage
-                const killedRobots = [];
-                beams.filter(beam => beam.to.energy)
-                    .forEach(beam => {
-                        const target = beam.to;
-                        target.energy--;
-                    });
-                checkEnergy(model).then(resolve);
-            });
-
+            if(beams.length > 0) {
+                animateLaserFire(model, beams, () => {
+                    //handle damage
+                    const killedRobots = [];
+                    beams.filter(beam => beam.to.energy)
+                        .forEach(beam => {
+                            const target = beam.to;
+                            target.energy--;
+                        });
+                    checkEnergy(model).then(resolve);
+                });
+            } else {
+                resolve();
+            }
         });
     };
 
