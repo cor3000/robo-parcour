@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "name": "robo-broker",
+  "author": "cor3000",
+  "version": "0.0.1",
+  "description": "Robo Parcour websocket game-player connector",
+  "main": "robo-broker.js",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "node robo-broker.js"
+  },
+  "dependencies": {
+    "nodejs-websocket": "^1.7.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/cor3000/robo-parcour.git"
+  },
+  "keywords": [
+    "websocket",
+    "game",
+    "broker",
+    "server"
+  ],
+  "bugs": {
+    "url": "https://github.com/cor3000/robo-parcour/issues"
+  },
+  "homepage": "https://github.com/cor3000/robo-parcour#readme"
+}
