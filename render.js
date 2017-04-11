@@ -1,3 +1,4 @@
+const NO_DELAY = 0;
 const tileSize = 50;
 const animationDuration = 0.5;
 
@@ -74,12 +75,6 @@ function tile(id, x, y, tileClass) {
     return div(id).size(tileSize, tileSize).atPos(x * tileSize, y * tileSize).withClass(`tile ${tileClass}`);
 }
 
-function commandCard(id, status, command) {
-    return div(id)
-        .withClass(`command ${command.command} ${status}`)
-        .attr('data-prio', Math.round(command.prio * 1000));
-}
-
 function initField(model) {
     const fieldElem = div('field').withClass('field').appendTo(document.body).get();
     const wallsElem = div('walls').withClass('walls shadows').appendTo(fieldElem).get();
@@ -87,10 +82,6 @@ function initField(model) {
     model.fieldElemId = fieldElem.id;
     model.wallsElemId = wallsElem.id;
     model.itemsElemId = itemsElem.id;
-}
-
-function initCommands(model, robot) {
-    robot.commandsElem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
 }
 
 function renderRobot(model, robot) {
@@ -109,7 +100,7 @@ function updateRobot(robots) {
                     rotation: robot.dir * 90,
                     ease: Sine.easeInOut
                    };
-            anim.add(TweenLite.to(div(robot.id).get(), animationDuration, opts), 0);
+            anim.add(TweenLite.to(div(robot.id).get(), animationDuration, opts), NO_DELAY);
         });
     });
 }
@@ -165,21 +156,23 @@ function animateEnergyDeath(robots) {
     });
 }
 
-function animateRespawn(robots, callback) {
-    robots.forEach((robot, index) => {
-        const robotDiv = div(robot.id).get();
-        TweenLite.set(robotDiv, {scale: 2, opacity: 0});
-        const opts = {
-            x: robot.x * tileSize, 
-            y: robot.y * tileSize, 
-            rotation: robot.dir * 90,
-            scale: 1, 
-            opacity: 1 
-        };
-        if(index == 0) {
-            opts.onComplete = callback;
-        }
-        TweenLite.to(div(robot.id).get(), 1.5, opts);
+function animateRespawn(robots) {
+    if(robots.length === 0) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const anim = new TimelineLite({onComplete: resolve});
+        robots.forEach((robot, index) => {
+            const robotDiv = div(robot.id).get();
+            anim.add(TweenLite.set(robotDiv, {scale: 2, opacity: 0}), NO_DELAY);
+            const opts = {
+                x: robot.x * tileSize, 
+                y: robot.y * tileSize, 
+                rotation: robot.dir * 90,
+                scale: 1, 
+                opacity: 1 
+            };
+            anim.add(TweenLite.to(div(robot.id).get(), 1.5, opts), NO_DELAY);
+        });
+
     });
 }
 
@@ -243,8 +236,20 @@ function renderField(model) {
     model.robots.forEach(robot => renderRobot(model, robot));
 }
 
+
+function initCommands(model, robot) {
+    const elem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
+    robot.commandsElemId = elem.id;
+}
+
+function commandCard(id, status, command) {
+    return div(id)
+        .withClass(`command ${command.command} ${status}`)
+        .attr('data-prio', Math.round(command.prio * 1000));
+}
+
 function renderCommands(model, robot, onSelect, onUnselect) {
-    const commandsElem = div(robot.commandsElem.id).clear().get();
+    const commandsElem = div(robot.commandsElemId).clear().get();
 
     robot.selectedCommands.forEach((command, index) => {
         const commandElem = commandCard(`${robot.id}-command-selected-${index}`, 'selected', command)

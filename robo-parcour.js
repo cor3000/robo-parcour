@@ -142,10 +142,13 @@ function itemsAt(model, x, y, type) {
     return items;
 }
 
-function itemById(model, itemId) {
-    return model.items.find(item => item.id === itemId);
+function itemById(model, id) {
+    return model.items.find(item => item.id === id);
 }
 
+function robotById(model, id) {
+    return model.robots.find(robot => robot.id === id);
+}
 
 function removeItem(model, item) {
     model.items.splice(model.items.indexOf(item), 1);
@@ -295,62 +298,39 @@ function nextRound(model) {
     model.robots.forEach(robot => {
         robot.availableCommands = randomOf(model.commands, robot.energy)
             .map(command => {return {
+                id: 'command-card-'+nextId(),
+                robotId: robot.id,
                 command, 
                 prio: Math.random()
              }});
         robot.selectedCommands = [];
-        robot.commandInterface = robotCommands(model, robot);
         renderCommands(model, robot, selectCommand, unselectCommand);
     });
 }
 
-function cleanupRound(model, callback) {
-    console.log('repairRobots');
-    robotsOn(model, [REPAIR, CHECKPOINT]).forEach(ri => {
-        ri.robot.energy = Math.min(ri.robot.energy + 1, 10);
-    });
-    const respawnedRobots = model.robots
-        .filter(robot => robot.death && robot.lives > 0)
-        .map(robot => {
-            delete robot.death;
-            robot.lives--;
-            robot.energy = 10;
-            const respawnPoint = itemById(model, robot.respawnId);
-            robot.x = respawnPoint.x;
-            robot.y = respawnPoint.y;
-            return robot;
+function cleanupRound(model) {
+    return new Promise((resolve, reject) => {
+        console.log('repairRobots');
+        robotsOn(model, [REPAIR, CHECKPOINT]).forEach(ri => {
+            ri.robot.energy = Math.min(ri.robot.energy + 1, 10);
         });
-    if(respawnedRobots.length > 0) {
-        animateRespawn(respawnedRobots, callback())
-    } else {
-        callback();
-    }
+        const respawnedRobots = model.robots
+            .filter(robot => robot.death && robot.lives > 0)
+            .map(robot => {
+                delete robot.death;
+                robot.lives--;
+                robot.energy = 10;
+                const respawnPoint = itemById(model, robot.respawnId);
+                robot.x = respawnPoint.x;
+                robot.y = respawnPoint.y;
+                return robot;
+            });
+        animateRespawn(respawnedRobots).then(resolve);
+    });
 }
 
 function executeProgramm(model) {
-    let done = true;
-    const nextCommands = model.robots
-        .map(robot => {return {robot, commandCard: robot.selectedCommands.shift()}})
-        .filter(robotCommand => robotCommand.commandCard !== undefined)
-        .sort((rc1, rc2) => rc2.commandCard.prio > rc1.commandCard.prio);
-
-    if(nextCommands.length == 0) {
-        cleanupRound(model, () => nextRound(model));
-        return;
-    }
-
-    const executeCommands = function(robotCommands) {
-        return new Promise((resolve, reject) => {
-            const robotCommand = robotCommands[0];
-            if(robotCommand) {
-                const commandName = robotCommand.commandCard.command;
-                robotCommand.robot.commandInterface[commandName]()
-                        .then(() => executeCommands(robotCommands.slice(1)))
-                        .then(resolve);
-            } else resolve();
-       });
-    };
-
+    
     const moveWorld = function() {
         return new Promise((resolve, reject) => {
             const moveConveyors = () => {
@@ -450,7 +430,30 @@ function executeProgramm(model) {
         })
     };
 
-    executeCommands(nextCommands)
+    const roundCommands = model.robots
+        .map(robot => robot.selectedCommands.shift())
+        .filter(commandCard => commandCard !== undefined)
+        .sort((cc1, cc2) => cc2.prio > cc1.prio);
+
+    if(roundCommands.length == 0) {
+        cleanupRound(model)
+            .then(() => nextRound(model));
+        return;
+    }
+
+    const executeCommands = function(roundCommands) {
+        return new Promise((resolve, reject) => {
+            const commandCard = roundCommands[0];
+            if(commandCard) {
+                const commandInterface = robotCommands(model, robotById(model, commandCard.robotId));
+                commandInterface[commandCard.command]()
+                        .then(() => executeCommands(roundCommands.slice(1)))
+                        .then(resolve);
+            } else resolve();
+       });
+    };
+
+    executeCommands(roundCommands)
         .then(handleCheckpoints)
         .then(moveWorld)
         .then(fireLasers)
