@@ -5,7 +5,10 @@ const localtunnel = require('localtunnel');
 
 const expressWs = require('express-ws')(app);
 
-
+const CLOSE_GAME_CLOSED = 4000;
+const CLOSE_GAME_ALREADY_EXISTS = 4001;
+const CLOSE_GAME_DOESNT_EXIST = 4002;
+const CLOSE_PLAYER_ALREADY_EXISTS = 4003;
 
 //security recommended stuff
 app.disable('x-powered-by')
@@ -19,7 +22,7 @@ app.ws('/ws/:gameId', function(ws, req) {
 	const gameId = req.params.gameId;
 	if(games[gameId]) {
 		console.log('game already exists: ', req.params);
-		ws.close(4001, 'game already exists');
+		ws.close(CLOSE_GAME_ALREADY_EXISTS, 'game already exists');
 		return;
 	}
 	console.log('new game: ', req.params);
@@ -35,7 +38,7 @@ app.ws('/ws/:gameId', function(ws, req) {
 		console.log('game closed', gameId);
 		for(const playerId in games[gameId].players) {
 			console.log('closing player connection:', gameId, playerId, code, reason);
-			games[gameId].players[playerId].conn.close(4000, 'game closed');
+			games[gameId].players[playerId].conn.close(CLOSE_GAME_CLOSED, 'game closed');
 		}
 		delete games[gameId];
 	});
@@ -47,12 +50,12 @@ app.ws('/ws/:gameId/:playerId', function(ws, req) {
 	console.log('new player: ', req.params);
 	if(!games[gameId]) {
 		console.log('new player rejected: ', req.params);
-		ws.close(4002, 'game doesn\'t exists');
+		ws.close(CLOSE_GAME_DOESNT_EXIST, 'game doesn\'t exists');
 		return;
 	}
 	if(games[gameId].players[playerId]) {
 		console.log('player already exists: ', req.params);
-		ws.close(4003, 'player already exists');
+		ws.close(CLOSE_PLAYER_ALREADY_EXISTS, 'player already exists');
 		return;
 	}
 	games[gameId].players[playerId] = { conn: ws };
