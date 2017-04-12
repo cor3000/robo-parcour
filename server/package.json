@@ -1,16 +1,19 @@
 {
   "private": true,
-  "name": "robo-broker",
+  "name": "game-server",
   "author": "cor3000",
   "version": "0.0.1",
-  "description": "Robo Parcour websocket game-player connector",
-  "main": "robo-broker.js",
+  "description": "Robo Parcour websocket game server",
+  "main": "game-server.js",
   "license": "UNLICENSED",
   "scripts": {
-    "start": "node robo-broker.js"
+    "start": "node game-server.js"
   },
   "dependencies": {
-    "nodejs-websocket": "^1.7.1"
+    "express": "^4.15.2",
+    "express-ws": "^3.0.0",
+    "helmet": "^3.5.0",
+    "localtunnel": "^1.8.2"
   },
   "devDependencies": {},
   "repository": {
