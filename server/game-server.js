@@ -5,6 +5,8 @@ const localtunnel = require('localtunnel');
 
 const expressWs = require('express-ws')(app);
 
+
+
 //security recommended stuff
 app.disable('x-powered-by')
 app.use(helmet())
@@ -68,7 +70,7 @@ app.ws('/ws/:gameId/:playerId', function(ws, req) {
 });
 
 //serve static resources
-app.use('/static', express.static('public'))
+app.use('/client', express.static('../client'))
 
 app.listen(8000, function () {
   console.log('Example app listening on port 8000!');
