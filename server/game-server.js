@@ -15,8 +15,13 @@ const games = {};
 //enable websocket
 app.ws('/ws/:gameId', function(ws, req) {
 	const gameId = req.params.gameId;
+	if(games[gameId]) {
+		console.log('game already exists: ', req.params);
+		ws.close(4001, 'game already exists');
+		return;
+	}
 	console.log('new game: ', req.params);
-	games[req.params.gameId] = {
+	games[gameId] = {
 		conn: ws,
 		players: {}
 	};
@@ -25,10 +30,10 @@ app.ws('/ws/:gameId', function(ws, req) {
 	});
 
 	ws.on('close', function(code, reason) {
-		console.log('game left', gameId);
+		console.log('game closed', gameId);
 		for(const playerId in games[gameId].players) {
 			console.log('closing player connection:', gameId, playerId, code, reason);
-			games[gameId].players[playerId].conn.close(4000, 'game left');
+			games[gameId].players[playerId].conn.close(4000, 'game closed');
 		}
 		delete games[gameId];
 	});
@@ -40,7 +45,13 @@ app.ws('/ws/:gameId/:playerId', function(ws, req) {
 	console.log('new player: ', req.params);
 	if(!games[gameId]) {
 		console.log('new player rejected: ', req.params);
-		ws.close();
+		ws.close(4002, 'game doesn\'t exists');
+		return;
+	}
+	if(games[gameId].players[playerId]) {
+		console.log('player already exists: ', req.params);
+		ws.close(4003, 'player already exists');
+		return;
 	}
 	games[gameId].players[playerId] = { conn: ws };
 	
@@ -63,6 +74,8 @@ app.listen(8000, function () {
   console.log('Example app listening on port 8000!');
 });
 
+/*
 localtunnel(8000 ,{subdomain: 'roboparcour'}, (err, tunnel) => {
 	console.log('local tunnal available on: ', tunnel.url);
 });
+*/
