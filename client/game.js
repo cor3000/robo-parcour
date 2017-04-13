@@ -499,12 +499,13 @@ function startGame(gameModel, options) {
     initField(gameModel);
     renderField(gameModel);
 
+    //TODO ... wait for clients
+
     gameModel.robots.forEach(robot => {
         initCommands(gameModel, robot);
     });
 
     const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
-
     //TODO: fill with random commands if not filled correctly
     executeBtn.addEventListener('click', () => executeProgramm(gameModel));
 
@@ -527,3 +528,28 @@ startGame(gameModel, {
     numCheckpoints: 3, 
     levelData: level1Data
 });
+
+const CLOSE_GAME_ALREADY_EXISTS = 4001;
+
+const protocol = window.location.protocol.replace('http', 'ws');
+const host = window.location.host;
+const endpointUrl = `${protocol}//${host}/ws`;
+
+function connectAsGame(gameId) {
+    const ws = new ReconnectingWebsocket(`${endpointUrl}/${gameId}`);
+    const onClose = event => {
+        console.log(event);
+        if(event.code === CLOSE_GAME_ALREADY_EXISTS) {
+            ws.removeEventListener('close', onClose);
+            ws.close(1000, '', {keepClosed: true});
+        }
+    };
+    ws.addEventListener('close', onClose);
+    return ws;
+}
+
+const gameConn = connectAsGame('test123');
+gameConn.addEventListener('message', (msg => {
+    const gameEvent = JSON.parse(msg.data).event;
+    console.log(gameEvent);
+}));

@@ -5,10 +5,8 @@ const protocol = window.location.protocol.replace('http', 'ws');
 const host = window.location.host;
 const endpointUrl = `${protocol}//${host}/ws`;
 
-//g = new ReconnectingWebsocket(`${endpointUrl}/test123`);
-
-function connectAs(gameId, playerId) {
-    const ws = new ReconnectingWebsocket(`${endpointUrl}/${gameId}/playerId`);
+function connectToGameAs(gameId, playerId) {
+    const ws = new ReconnectingWebsocket(`${endpointUrl}/${gameId}/${playerId}`);
     const onClose = event => {
         console.log(event);
         if(event.code === CLOSE_PLAYER_ALREADY_EXISTS) {
@@ -17,11 +15,11 @@ function connectAs(gameId, playerId) {
         }
     };
     ws.addEventListener('close', onClose);
+    return ws;
 }
 
-function connectTo(gameId) {
-    connectAs(gameId, 'robot0');
-}
-
-connectTo('test123');
-
+playerConn = connectToGameAs('test123', 'robot0');
+playerConn.addEventListener('message', (msg => {
+    const gameEvent = JSON.parse(msg.data).event;
+    console.log(gameEvent);
+}));
