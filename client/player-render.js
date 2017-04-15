@@ -1,6 +1,6 @@
 
-function initCommands(robot) {
-    return elem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
+function initCommands(robotId) {
+    return elem = div(`${robotId}-commands`).withClass(`robotCommands ${robotId}`).appendTo(document.body).get();
 }
 
 function commandCard(id, status, command) {
@@ -10,8 +10,7 @@ function commandCard(id, status, command) {
 }
 
 function renderCommands(robot, onSelect, onUnselect) {
-    const commandsElem = initCommands(robot);
-    div(commandsElem.id).clear();
+    const commandsElem = div(`${robot.id}-commands`).clear().get();
 
     robot.selectedCommands.forEach((command, index) => {
         const commandElem = commandCard(`${robot.id}-command-selected-${index}`, 'selected', command)

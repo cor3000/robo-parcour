@@ -109,11 +109,11 @@ function initPlayer(ws, req) {
         addPlayer(gameId, playerId, ws);
 
         ws.on('message', function(msg) {
-            console.log('DEBUG message from', req.params, json);
+            console.log('DEBUG message from', req.params, msg);
             parseMessage(msg)
-               .then(json => {
+               .then(data => {
                         const gameConn = games[gameId].conn;
-                        gameConn.send(JSON.stringify(json.data));
+                        gameConn.send(JSON.stringify(data));
                     })
                .catch(error => console.log('ERROR invalid message : ', msg))
         });

@@ -27,9 +27,17 @@ const onGameMessage = gameMessageHandler(data => {
     }
 });
 
+function uploadProgramm(robot) {
+    const selectedCommandIds = robot.selectedCommands.map(command => command.id);
+    client.conn.send(JSON.stringify({selectedCommandIds}));
+}
+
 connectToGameAs('test123', ['robot0', 'robot1', 'robot2', 'robot3'], onGameMessage)
     .then(playerClient => {
         console.log(playerClient)
         client = playerClient;
+        initCommands(client.playerId);
+        const uploadProgrammBtn = div('uploadProgramm').withText('UPLOAD PROGRAMM').withClass('mainButton').appendTo(document.body).get();
+        uploadProgrammBtn.addEventListener('click', () => uploadProgramm(model.robot));
     });
 

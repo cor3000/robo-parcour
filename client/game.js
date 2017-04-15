@@ -419,17 +419,6 @@ function executeProgramm(model) {
         })
     };
 
-    const roundCommands = model.robots
-        .map(robot => robot.selectedCommands.shift())
-        .filter(commandCard => commandCard !== undefined)
-        .sort((cc1, cc2) => cc2.prio > cc1.prio);
-
-    if(roundCommands.length == 0) {
-        cleanupRound(model)
-            .then(() => nextRound(model));
-        return;
-    }
-
     const executeCommands = function(roundCommands) {
         return new Promise((resolve, reject) => {
             const commandCard = roundCommands[0];
@@ -441,6 +430,17 @@ function executeProgramm(model) {
             } else resolve();
        });
     };
+
+    const roundCommands = model.robots
+        .map(robot => robot.selectedCommands.shift())
+        .filter(commandCard => commandCard !== undefined)
+        .sort((cc1, cc2) => cc2.prio > cc1.prio);
+
+    if(roundCommands.length == 0) {
+        cleanupRound(model)
+            .then(() => nextRound(model));
+        return;
+    }
 
     executeCommands(roundCommands)
         .then(handleCheckpoints)
