@@ -2,11 +2,26 @@
 <html>
     <head>
         <link rel="stylesheet" href="style.css"/>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>    </head>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.19.0/TweenMax.min.js"></script>
+    </head>
     <body>
         <script>module = {};</script>
         <script src="lib/reconnecting-websocket.js"></script>
+        <script src="client-connect.js"></script>
         <script src="game-render.js"></script>
+
+        <form id="connect" action="#">
+            ID:
+            <input id="gameId" value="test123"/>
+            Checkpoints: 
+            <input type="number" id="numCheckpoints" value="3"/>
+            Level: 
+            <select id="level">
+                <option selected="selected">Test Level<option>
+            </select>
+            <button type="submit" id="connect">Create</button>
+        </form>
+
         <script src="game.js"></script>
     </body>
 </html>

@@ -83,6 +83,8 @@ const level1Data = {
     ]
 };
 
+const levels = {'Test Level' : level1Data};
+
 const gameModel = {
     robots : [],
     items: [],
@@ -523,33 +525,34 @@ function pickRandomFromAvailable(robot) {
 }
 */
 
-startGame(gameModel, {
-    numPlayers: 2, 
-    numCheckpoints: 3, 
-    levelData: level1Data
-});
+let client;
+const connectForm = document.getElementById('connect');
 
-const CLOSE_GAME_ALREADY_EXISTS = 4001;
+connectForm.addEventListener('submit', event => {
+    event.preventDefault();
+    const gameId = connectForm.querySelector('#gameId').value;
+    const numCheckpoints = parseInt(connectForm.querySelector('#numCheckpoints').value);
+    const level = connectForm.querySelector('#level').value;
 
-const protocol = window.location.protocol.replace('http', 'ws');
-const host = window.location.host;
-const endpointUrl = `${protocol}//${host}/ws`;
-
-function connectAsGame(gameId) {
-    const ws = new ReconnectingWebsocket(`${endpointUrl}/${gameId}`);
-    const onClose = event => {
-        console.log(event);
-        if(event.code === CLOSE_GAME_ALREADY_EXISTS) {
-            ws.removeEventListener('close', onClose);
-            ws.close(1000, '', {keepClosed: true});
+    const onGameMessage = event => {
+        console.log("DEBUG Game Message: ", event.data);
+        if(event.players) {
+            
         }
     };
-    ws.addEventListener('close', onClose);
-    return ws;
-}
 
-const gameConn = connectAsGame('test123');
-gameConn.addEventListener('message', (msg => {
-    const gameEvent = JSON.parse(msg.data).event;
-    console.log(gameEvent);
-}));
+    connectAsGame(gameId, onGameMessage)
+        .then(gameClient => {
+            console.log(gameClient);
+            client = gameClient;
+
+            startGame(gameModel, {
+                numPlayers: 0, 
+                numCheckpoints: numCheckpoints, 
+                levelData: levels[level]
+            });
+        })
+        .catch(reason => alert('error connecting: ' + reason))
+        .then(connectForm.style.display = "none");
+});
+

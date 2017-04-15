@@ -10,12 +10,51 @@ const CLOSE_GAME_ALREADY_EXISTS = 4001;
 const CLOSE_GAME_DOESNT_EXIST = 4002;
 const CLOSE_PLAYER_ALREADY_EXISTS = 4003;
 
+const CONFIRM_GAME = 'confirmGame';
+const CONFIRM_PLAYER = 'confirmPlayer';
+
 //security recommended stuff
 app.disable('x-powered-by')
 app.use(helmet())
 
+function parseMessage(msg) {
+    return new Promise((resolve, reject) => {
+        resolve(JSON.parse(msg));
+    });
+}
+
 // STATE, STATE, STATE, STATE, STATE, STATE, STATE, STATE
 const games = {};
+function addPlayer(gameId, playerId, ws) {
+    games[gameId].players[playerId] = {
+        id: playerId,
+        gameId: gameId,
+        conn: ws
+    };
+    sendPlayers(gameId);
+}
+
+function removePlayer(gameId, playerId) {
+    if(games[gameId]) {
+        delete games[gameId].players[playerId];
+        sendPlayers(gameId);
+    }
+}
+
+function playersArray(game) {
+    const players = [];
+    for(const key in game.players) {
+        players.push(game.players[key]);
+    }
+    return players;
+}
+
+function sendPlayers(gameId) {
+    const game = games[gameId];
+    const players = playersArray(game).map(player => {return {id: player.id};});
+    console.log('DEBUG sending players: ', players);
+    game.conn.send(JSON.stringify({players}));
+}
 
 function initGame(ws, req) {
     return new Promise((resolve, reject) => {
@@ -33,6 +72,13 @@ function initGame(ws, req) {
 
 	    ws.on('message', function(msg) {
 		    console.log('DEBUG message from', req.params, msg);
+            parseMessage(msg)
+               .then(json => json.to.forEach(
+                    playerId => {
+                        const playerConn = games[gameId].players[playerId].conn;
+                        playerConn.send(JSON.stringify(json.data));
+                    }))
+               .catch(error => console.log('ERROR invalid message : ', msg))
 	    });
 
 	    ws.on('close', function(code, reason) {
@@ -60,43 +106,42 @@ function initPlayer(ws, req) {
             reject({ws, code: CLOSE_PLAYER_ALREADY_EXISTS, reason: `player already exists (params: ${req.params})`});
             return;
         }
-        games[gameId].players[playerId] = {
-            id: playerId,
-            gameId: gameId,
-            conn: ws
-        };
+        addPlayer(gameId, playerId, ws);
 
         ws.on('message', function(msg) {
-            const json = JSON.parse(msg);
             console.log('DEBUG message from', req.params, json);
+            parseMessage(msg)
+               .then(json => {
+                        const gameConn = games[gameId].conn;
+                        gameConn.send(JSON.stringify(json.data));
+                    })
+               .catch(error => console.log('ERROR invalid message : ', msg))
         });
         ws.on('close', function(code, reason) {
             console.log('INFO player left', req.params, code, reason);
-            if(games[gameId]) {
-                delete games[gameId].players[playerId];
-            }
+            removePlayer(gameId, playerId);
         });
-
         resolve(games[gameId].players[playerId]);
     });
 }
 
-
 function confirmGame(game) {
-    const message = {event: {name: 'gameConfirm', data: {id: game.id}}}
-    console.log('DEBUG confirm game:', message)
-    game.conn.send(JSON.stringify(message));
+    console.log('DEBUG confirm game:', game.id)
+    game.conn.send(CONFIRM_GAME);
 }
 
 function confirmPlayer(player) {
-    const message = {event: {name: 'playerConfirm', data: {id: player.id, gameId: player.gameId}}}
-    console.log('DEBUG confirm player:', message)
-    player.conn.send(JSON.stringify(message));
+    console.log('DEBUG confirm player:', player.id, player.gameId)
+    player.conn.send(CONFIRM_PLAYER);
 }
 
-function closeConn({ws, code, reason}) {
-    console.log('WARN  close connection:', code, reason);
-    console.log('DEBUG',  arguments);
+function closeConn(error) {
+    const {ws, code, reason} = error;
+    if(!ws || !code || !reason) {
+        console.log('ERROR ',  arguments);
+        return;
+    }
+    console.log('WARN close connection:', code, reason);
     ws.close(code, reason);
 }
 
