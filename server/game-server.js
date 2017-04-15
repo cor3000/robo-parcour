@@ -113,6 +113,7 @@ function initPlayer(ws, req) {
             parseMessage(msg)
                .then(data => {
                         const gameConn = games[gameId].conn;
+                        data.playerId = playerId;
                         gameConn.send(JSON.stringify(data));
                     })
                .catch(error => console.log('ERROR invalid message : ', msg))

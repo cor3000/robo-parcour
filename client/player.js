@@ -29,7 +29,7 @@ const onGameMessage = gameMessageHandler(data => {
 
 function uploadProgramm(robot) {
     const selectedCommandIds = robot.selectedCommands.map(command => command.id);
-    client.conn.send(JSON.stringify({selectedCommandIds}));
+    client.conn.send(JSON.stringify({uploadProgramm: {selectedCommandIds}}));
 }
 
 connectToGameAs('test123', ['robot0', 'robot1', 'robot2', 'robot3'], onGameMessage)

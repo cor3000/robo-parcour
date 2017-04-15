@@ -488,6 +488,15 @@ const onGameMessage = gameMessageHandler(data => {
             renderRobot(model, robotById(model, player.id));
         });
     }
+    const robot = robotById(model, data.playerId);
+    if(robot) {
+        if(data.uploadProgramm) {
+            const {selectedCommandIds} = data.uploadProgramm;
+            const selectedCommands = selectedCommandIds.map(ccId => robot.availableCommands.find(cc => cc.id === ccId));
+            console.log(selectedCommands);
+            robot.selectedCommands = selectedCommands;
+        }
+    }
 });
 
 function initGame(model, options) {
