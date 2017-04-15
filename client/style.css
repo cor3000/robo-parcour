@@ -273,8 +273,33 @@ body {
     text-align: center;
 }
 
-.execute {
+#connect {
+    text-align: center;
+    display: block;
+}
+
+#connect div {
+	margin: 10px;
+    text-align: center;
+}
+#connect div * {
+    display: inline-block;
+    box-sizing: border-box;
+}
+#connect label {
+    color: grey;
+    text-align: right;
+    width: 140px;
+}
+#connect button,
+#connect input,
+#connect select {
+    width: 170px;
+}
+
+.mainButton {
     color: yellow;
     cursor: pointer;
     text-align: center;
+    font-size: 25px;
 }

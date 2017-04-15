@@ -463,15 +463,17 @@ function executeProgramm(model) {
 }
 
 
-function startGame(gameModel, options) {
-    initGameModel(gameModel, options.levelData);
-
-    const starts = gameModel.items.filter(item => item.type === 'start');
-    for(let i = 0; i < options.numPlayers; i++) {
-        const startIndex = Math.floor(Math.random() * starts.length);
-        const start = starts.splice(startIndex, 1)[0];
+function initRobot(model, robotId) {
+    const robot = robotById(model, robotId);
+    if(!robot) {
+        const starts = model.items.filter(item => item.type === START);
+        let start;
+        while(!start || start.ownerId) {
+            const startIndex = Math.floor(Math.random() * starts.length);
+            start = starts[startIndex];
+        }
         const robot = {
-            id: 'robot' + i,
+            id: robotId,
             type: ROBOT,
             dir: start.dir,
             energy: 10,
@@ -482,36 +484,57 @@ function startGame(gameModel, options) {
             respawnId: start.id
         };
         start.ownerId = robot.id;
-        gameModel.robots.push(robot);
+        model.robots.push(robot);
     }
-    const checkpoints = gameModel.items.filter(item => item.type === CHECKPOINT);
-    gameModel.checkpoints = [];
+}
+
+const onGameMessage = event => {
+    console.log("DEBUG Game Message: ", event.data);
+    const model = gameModel;
+    parseMessage(event.data)
+        .then(json => {
+            if(json.players) {
+                //TODO: handle disconnect/reconnect
+                json.players.forEach(player => {
+                    initRobot(model, player.id);
+                    renderRobot(model, robotById(model, player.id));
+                });
+            }
+        })
+        .catch(error => console.log("ERROR onGameMessage", error));
+};
+
+function initGame(model, options) {
+    initGameModel(model, options.levelData);
+
+    const checkpoints = model.items.filter(item => item.type === CHECKPOINT);
+    model.checkpoints = [];
     for(let i = 0; i < options.numCheckpoints; i++) {
         const checkpointIndex = Math.floor(Math.random() * checkpoints.length);
         const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];
-        gameModel.checkpoints.push(checkpoint.id);
+        model.checkpoints.push(checkpoint.id);
         checkpoint.index = i;
     }
     //remove unused checkpoints
-    checkpoints.forEach(cp => removeItem(gameModel, cp));
-    //remove unused starts
-    starts.filter(st => !st.ownerId)
-          .forEach(st => removeItem(gameModel, st));
+    checkpoints.forEach(cp => removeItem(model, cp));
 
-    initField(gameModel);
-    renderField(gameModel);
+    initField(model);
+    renderField(model);
 
-    //TODO ... wait for clients
-
-    gameModel.robots.forEach(robot => {
-        initCommands(gameModel, robot);
+    const startBtn = div('start').withText('START').withClass('mainButton').appendTo(document.body).get();
+    startBtn.addEventListener('click', () => {
+        startBtn.parentNode.removeChild(startBtn);
+        startGame(model);
     });
+}
 
-    const executeBtn = div('execute').withText('EXECUTE').withClass('execute').appendTo(document.body).get();
-    //TODO: fill with random commands if not filled correctly
-    executeBtn.addEventListener('click', () => executeProgramm(gameModel));
-
-    nextRound(gameModel);
+function startGame(model) {
+    model.robots.forEach(robot => {
+        initCommands(model, robot);
+    });
+    nextRound(model);
+    const executeBtn = div('execute').withText('EXECUTE').withClass('mainButton').appendTo(document.body).get();
+    executeBtn.addEventListener('click', () => executeProgramm(model));
 }
 
 /*
@@ -534,20 +557,13 @@ connectForm.addEventListener('submit', event => {
     const numCheckpoints = parseInt(connectForm.querySelector('#numCheckpoints').value);
     const level = connectForm.querySelector('#level').value;
 
-    const onGameMessage = event => {
-        console.log("DEBUG Game Message: ", event.data);
-        if(event.players) {
-            
-        }
-    };
-
     connectAsGame(gameId, onGameMessage)
         .then(gameClient => {
             console.log(gameClient);
             client = gameClient;
 
-            startGame(gameModel, {
-                numPlayers: 0, 
+            initGame(gameModel, {
+                /*numPlayers: 0, */
                 numCheckpoints: numCheckpoints, 
                 levelData: levels[level]
             });

@@ -50,6 +50,7 @@ function connectToGameAs(gameId, playerIds, onMessage) {
         if(!playerId) {
             console.log('DEBUG failed to connect to game');
             reject('DEBUG failed to connect to game');
+            return;
         }
         const ws = new ReconnectingWebsocket(`${endpointUrl}/${gameId}/${playerId}`);
         const onClose = event => {

@@ -11,15 +11,23 @@
         <script src="game-render.js"></script>
 
         <form id="connect" action="#">
-            ID:
-            <input id="gameId" value="test123"/>
-            Checkpoints: 
-            <input type="number" id="numCheckpoints" value="3"/>
-            Level: 
-            <select id="level">
-                <option selected="selected">Test Level<option>
-            </select>
-            <button type="submit" id="connect">Create</button>
+            <div>
+                <label for="gameId">Game ID:</label>
+                <input id="gameId" value="test123"/>
+            </div>
+            <div>
+                <label for="label">Level:</label>
+                <select id="level">
+                    <option selected="selected">Test Level<option>
+                </select>
+            </div>
+            <div>
+                <label for="numCheckpoints">Checkpoints: </label>
+                <input type="number" id="numCheckpoints" value="3"/>
+            </div>
+            <div>
+                <button type="submit" id="connect">Create</button>
+            </div>
         </form>
 
         <script src="game.js"></script>
