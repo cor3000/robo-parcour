@@ -282,20 +282,6 @@ function randomOf(array, count) {
     return result;
 }
 
-function selectCommand(robot, command, index) {
-    if(robot.selectedCommands.length < 5) {
-        robot.availableCommands.splice(index, 1);
-        robot.selectedCommands.push(command);
-        renderCommands(gameModel, robot, selectCommand, unselectCommand);
-    }
-}
-
-function unselectCommand(robot, command, index) {
-    robot.selectedCommands.splice(index, 1);
-    robot.availableCommands.unshift(command);
-    renderCommands(gameModel, robot, selectCommand, unselectCommand);
-}
-
 function nextRound(model) {
     model.robots.forEach(robot => {
         robot.availableCommands = randomOf(model.commands, robot.energy)
@@ -306,7 +292,8 @@ function nextRound(model) {
                 prio: Math.random()
              }});
         robot.selectedCommands = [];
-        renderCommands(model, robot, selectCommand, unselectCommand);
+        robot.lockedCommands = [];
+        client.conn.send(JSON.stringify({to: [robot.id], data: {robot}}));
     });
 }
 
@@ -481,28 +468,27 @@ function initRobot(model, robotId) {
             x: start.x,
             y: start.y,
             checkpointId: start.id,
-            respawnId: start.id
+            respawnId: start.id,
+            availableCommands: [],
+            selectedCommands: [],
+            lockedCommands: []
         };
         start.ownerId = robot.id;
         model.robots.push(robot);
     }
 }
 
-const onGameMessage = event => {
-    console.log("DEBUG Game Message: ", event.data);
+
+const onGameMessage = gameMessageHandler(data => {
     const model = gameModel;
-    parseMessage(event.data)
-        .then(json => {
-            if(json.players) {
-                //TODO: handle disconnect/reconnect
-                json.players.forEach(player => {
-                    initRobot(model, player.id);
-                    renderRobot(model, robotById(model, player.id));
-                });
-            }
-        })
-        .catch(error => console.log("ERROR onGameMessage", error));
-};
+    if(data.players) {
+        //TODO: handle disconnect/reconnect
+        data.players.forEach(player => {
+            initRobot(model, player.id);
+            renderRobot(model, robotById(model, player.id));
+        });
+    }
+});
 
 function initGame(model, options) {
     initGameModel(model, options.levelData);
@@ -529,9 +515,6 @@ function initGame(model, options) {
 }
 
 function startGame(model) {
-    model.robots.forEach(robot => {
-        initCommands(model, robot);
-    });
     nextRound(model);
     const executeBtn = div('execute').withText('EXECUTE').withClass('mainButton').appendTo(document.body).get();
     executeBtn.addEventListener('click', () => executeProgramm(model));

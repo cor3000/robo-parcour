@@ -2,75 +2,6 @@ const NO_DELAY = 0;
 const tileSize = 50;
 const animationDuration = 0.5;
 
-function div(id) {
-    let elem = document.getElementById(id);
-    if(!elem) {
-        elem = document.createElement('div');
-        elem.id = id;
-    };
-    const ops = {
-        size: (w, h) => {
-            elem.style.width = `${w}px`;
-            elem.style.height = `${h}px`;
-            return ops;
-        },
-        atPos: (x, y) => {
-            TweenLite.set(elem, {x:x, y:y});
-            return ops;
-        },
-
-        rot: (angle) => {
-            TweenLite.set(elem, {rotation:angle})            
-            return ops;
-        },
-
-        withClass: (cls) => {
-            if(elem.getAttribute('class') !== cls) {
-                elem.setAttribute('class', cls);
-            }
-            return ops;
-        },
-
-        withText: text => {
-            if(text !== elem.innerText) {
-                elem.innerText = text;
-            }
-            return ops;
-        },
-
-        attr: (attr, value) => {
-            if(value !== elem.getAttribute(attr)) {
-                elem.setAttribute(attr, value);
-            }
-            return ops;
-        },
-
-        appendTo: (parent) => {
-            if(parent !== elem.parent) {
-                parent.appendChild(elem);
-            }
-            return ops;
-        },
-
-        insertBefore: (parent, before) => {
-            if(parent !== elem.parent) {
-                parent.insertBefore(elem, before);
-            }
-            return ops;
-        },
-
-        clear: () => {
-            while (elem.hasChildNodes()) {
-                elem.removeChild(elem.lastChild);
-            }
-            return ops;
-        },
-
-        get: () => elem
-    }
-    return ops;
-}
-
 function tile(id, x, y, tileClass) {
     return div(id).size(tileSize, tileSize).atPos(x * tileSize, y * tileSize).withClass(`tile ${tileClass}`);
 }
@@ -236,29 +167,3 @@ function renderField(model) {
     model.robots.forEach(robot => renderRobot(model, robot));
 }
 
-
-function initCommands(model, robot) {
-    const elem = div(`${robot.id}-commands`).withClass(`robotCommands ${robot.id}`).appendTo(document.body).get();
-    robot.commandsElemId = elem.id;
-}
-
-function commandCard(id, status, command) {
-    return div(id)
-        .withClass(`command ${command.command} ${status}`)
-        .attr('data-prio', Math.round(command.prio * 1000));
-}
-
-function renderCommands(model, robot, onSelect, onUnselect) {
-    const commandsElem = div(robot.commandsElemId).clear().get();
-
-    robot.selectedCommands.forEach((command, index) => {
-        const commandElem = commandCard(`${robot.id}-command-selected-${index}`, 'selected', command)
-            .appendTo(commandsElem).get();
-        commandElem.addEventListener('click', () => onUnselect(robot, command, index));
-    });
-    robot.availableCommands.forEach((command, index) => {
-        const commandElem = commandCard(`${robot.id}-command-available-${index}`, 'available', command)
-            .appendTo(commandsElem).get();
-        commandElem.addEventListener('click', () => onSelect(robot, command, index));
-    });
-}

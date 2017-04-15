@@ -60,11 +60,11 @@ function connectToGameAs(gameId, playerIds, onMessage) {
                 ws.removeEventListener('message', onConfirmMessage);
                 ws.close(1000, '', {keepClosed: true});
             }
-            resolve(connectToGameAs(gameId, playerIds));
+            resolve(connectToGameAs(gameId, playerIds, onMessage));
         };
         const onConfirmMessage = event => {
             console.log(event);
-            if(event.data === CONFIRM_GAME) {
+            if(event.data === CONFIRM_PLAYER) {
                 ws.addEventListener('message', onMessage);
             }
             ws.removeEventListener('close', onClose);
@@ -79,4 +79,11 @@ function connectToGameAs(gameId, playerIds, onMessage) {
         ws.addEventListener('message', onConfirmMessage);
     });
 }
+
+const gameMessageHandler = handler => event => {
+    console.log("DEBUG Game Message: ", event.data);
+    parseMessage(event.data)
+        .then(handler)
+        .catch(error => console.log("ERROR onGameMessage", error));
+};
 
