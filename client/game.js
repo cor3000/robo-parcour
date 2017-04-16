@@ -416,6 +416,7 @@ const onGameMessage = gameMessageHandler(data => {
         data.players.forEach(player => {
             initRobot(model, player.id);
             renderRobot(model, robotById(model, player.id));
+            renderField(model);
         });
     }
     const robot = robotById(model, data.playerId);
