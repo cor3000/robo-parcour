@@ -7,7 +7,8 @@ function tile(id, x, y, tileClass) {
 }
 
 function initField(model) {
-    const fieldElem = div('field').withClass('field').appendTo(document.body).get();
+    const {width, height} = model.dimensions;
+    const fieldElem = div('field').withClass('field').appendTo(document.body).size(width * tileSize, height * tileSize).get();
     const wallsElem = div('walls').withClass('walls shadows').appendTo(fieldElem).get();
     const itemsElem = div('items').withClass('items shadows').appendTo(fieldElem).get();
     model.fieldElemId = fieldElem.id;

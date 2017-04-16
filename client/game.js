@@ -3,116 +3,10 @@ function nextId() {
     return idCounter++;
 }
 
-const ROBOT = 'robot';
-const START = 'start';
-const CRATE = 'crate';
-const WALL = 'wall';
-const PIT = 'pit';
-const CHECKPOINT = 'checkpoint';
-const REPAIR = 'repair';
-const GEAR_LEFT_TURN = 'gearLeft';
-const GEAR_RIGHT_TURN = 'gearRight';
-const CONVEYOR = 'conveyor';
-const CONVEYOR_LEFT_TURN = 'conveyorLeft';
-const CONVEYOR_RIGHT_TURN = 'conveyorRight';
-
-const level1Data = {
-    dirs: {
-      right: 0,  
-      down: 1,  
-      left: 2,  
-      up: 3
-    },
-    tiles: {
-        0: 'empty',
-        1: CRATE, 
-        2: PIT, 
-        3: `${WALL}-right`,
-        4: `${WALL}-down`,
-        5: `${WALL}-left`,
-        6: `${WALL}-up`,
-        14: 'spike',
-        15: GEAR_LEFT_TURN,
-        16: GEAR_RIGHT_TURN,
-        20: `${CONVEYOR}-right`,
-        21: `${CONVEYOR}-down`,
-        22: `${CONVEYOR}-left`,
-        23: `${CONVEYOR}-up`,
-        24: `${CONVEYOR_LEFT_TURN}-right`,
-        25: `${CONVEYOR_LEFT_TURN}-down`,
-        26: `${CONVEYOR_LEFT_TURN}-left`,
-        27: `${CONVEYOR_LEFT_TURN}-up`,
-        28: `${CONVEYOR_RIGHT_TURN}-right`,
-        29: `${CONVEYOR_RIGHT_TURN}-down`,
-        30: `${CONVEYOR_RIGHT_TURN}-left`,
-        31: `${CONVEYOR_RIGHT_TURN}-up`,
-        50: `${START}-right`,
-        51: `${START}-down`,
-        52: `${START}-left`,
-        53: `${START}-up`,
-        60: CHECKPOINT,
-        61: REPAIR,
-    },
-    items: {
-        walls: [
-            [ 5, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 3],
-            [ 5, 1, 0, 0, 0, 3, 0, 0, 0, 0, 0, 3],
-            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 3],
-            [ 5, 4, 0, 0, 0, 4, 0, 0, 0, 0, 3, 3],
-            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3],
-            [ 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3],
-            [ 5, 1, 0, 0, 0, 0, 3, 0, 0, 5, 0, 3],
-            [ 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3]
-        ], 
-        items: [
-            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [ 0, 0,50, 0, 0, 0, 5,60, 0,61, 0, 0],
-            [ 0, 0, 0, 0, 2,25,22,22,26, 4, 0,60],
-            [ 0,50, 0,25,22,30,60,16,23,60, 0, 0],
-            [ 0,50, 0,24,20,29, 2,15,23,16, 2, 0],
-            [ 0, 0, 0, 0,15,24,20,20,27, 0, 0, 0],
-            [ 0, 0,50, 0,61, 0, 0,60, 3, 0, 0, 0],
-            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,60, 0]
-        ]
-    }, 
-    extraTiles : [
-        {x: 0, y: 0, tileName: `${WALL}-up`},
-        {x: 0, y: 7, tileName: `${WALL}-down`},
-        {x: 11, y: 0, tileName: `${WALL}-up`},
-        {x: 11, y: 7, tileName: `${WALL}-down`},
-    ]
-};
-
-const levels = {'Test Level' : level1Data};
-
 const gameModel = {
     robots : [],
     items: [],
     commands: ['forward1', 'forward2', 'forward3', 'left', 'right', 'uturn', 'back1']
-}
-
-function initGameModel(model, levelData) {
-    const items = [];
-    const createItem = ({x, y, tileName}) => {
-        const typeAndDir = tileName.split('-');
-        const type = typeAndDir[0];
-        const dir = typeAndDir[1] ? levelData.dirs[typeAndDir[1]] : 0;
-        items.push({
-            id: type + '-' + nextId(),
-            type, x, y, dir
-        });
-    };
-    for(layer in levelData.items) {
-        levelData.items[layer].forEach((row, y) => {
-            row.forEach((tileId, x) => {
-                if(tileId !== 0 /*empty*/) {
-                    createItem({x, y, tileName: levelData.tiles[tileId]});
-                }
-            });
-        });
-    }
-    levelData.extraTiles.forEach(createItem);
-    model.items = items;
 }
 
 function dir2Vec(dir, dist) {
@@ -500,10 +394,11 @@ const onGameMessage = gameMessageHandler(data => {
 });
 
 function initGame(model, options) {
-    initGameModel(model, options.levelData);
-
-    const checkpoints = model.items.filter(item => item.type === CHECKPOINT);
+    const {items, dimensions} = loadLevel(options.levelId);
+    model.items = items;
+    model.dimensions = dimensions;
     model.checkpoints = [];
+    const checkpoints = model.items.filter(item => item.type === CHECKPOINT);
     for(let i = 0; i < options.numCheckpoints; i++) {
         const checkpointIndex = Math.floor(Math.random() * checkpoints.length);
         const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];
@@ -547,18 +442,13 @@ connectForm.addEventListener('submit', event => {
     event.preventDefault();
     const gameId = connectForm.querySelector('#gameId').value;
     const numCheckpoints = parseInt(connectForm.querySelector('#numCheckpoints').value);
-    const level = connectForm.querySelector('#level').value;
+    const levelId = connectForm.querySelector('#levelId').value;
 
     connectAsGame(gameId, onGameMessage)
         .then(gameClient => {
             console.log(gameClient);
             client = gameClient;
-
-            initGame(gameModel, {
-                /*numPlayers: 0, */
-                numCheckpoints: numCheckpoints, 
-                levelData: levels[level]
-            });
+            initGame(gameModel, {numCheckpoints, levelId});
         })
         .catch(reason => alert('error connecting: ' + reason))
         .then(connectForm.style.display = "none");
