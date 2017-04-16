@@ -60,6 +60,16 @@ function robotsOn(model, type) {
         .filter(ri => ri.item);
 }
 
+function robotsOutside(model) {
+    return aliveRobots(model)
+        .filter(robot => isOutside(model, robot));
+}
+
+function isOutside(model, {x, y}) {
+    const {width, height} = model.dimensions;
+    return x < 0 || y < 0 || x >= width || y >= height;
+}
+
 function isWayBlocked(model, pos, vec) {
     const newX = Math.round(pos.x + vec.x);
     const newY = Math.round(pos.y + vec.y);
@@ -93,14 +103,15 @@ function killRobot(death, robot) {
     robot.death = death;
 }
 
-function checkPits(model) {
+function checkFalling(model) {
     return new Promise((resolve, reject) => {
-        const robotsOnPits = robotsOn(model, PIT)
-                .map(ri => ri.robot);
+        const robotsFalling = robotsOn(model, PIT)
+                .map(ri => ri.robot)
+                .concat(robotsOutside(model));
+        
+        robotsFalling.forEach(killRobot.bind(this, 'falling'));
 
-        robotsOnPits.forEach(killRobot.bind(this, 'pit'));
-
-        animatePitDeath(robotsOnPits)
+        animatePitDeath(robotsFalling)
             .then(resolve);
     });
 }
@@ -136,7 +147,7 @@ function move(model, robot, dist) {
                     robotToMove.y += vec.y;
                 });
                 updateRobot(robotsToMove)
-                    .then(() => checkPits(model))
+                    .then(() => checkFalling(model))
                     .then(() => singleStep(steps - 1));
             }
         }
@@ -216,21 +227,43 @@ function executeProgramm(model) {
     
     const moveWorld = function() {
         return new Promise((resolve, reject) => {
-            const moveConveyors = () => {
+            const moveConveyors2 = () => {
                 return new Promise((resolve, reject) => {
-                    robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])
+                    robotsOn(model, [CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])
                         .forEach(rc => {
                             const vec = dir2Vec(rc.item.dir);
                             rc.robot.x += vec.x;
                             rc.robot.y += vec.y;
-                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN])[0]
+                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])[0]
+                            if(conveyorTurn) {
+                                if(conveyorTurn.type === CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
+                            }
+                        });
+
+                    animateConveyors2();
+                    updateRobot(model.robots).then(resolve);
+                });
+            };
+            const moveConveyors = () => {
+                return new Promise((resolve, reject) => {
+                    robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])
+                        .forEach(rc => {
+                            const vec = dir2Vec(rc.item.dir);
+                            rc.robot.x += vec.x;
+                            rc.robot.y += vec.y;
+                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, 
+                                        [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])[0]
                             if(conveyorTurn) {
                                 if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
                                 if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                                if(conveyorTurn.type === CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
                             }
                         });
 
                     animateConveyors();
+                    animateConveyors2();
                     updateRobot(model.robots).then(resolve);
                 });
             };
@@ -247,7 +280,10 @@ function executeProgramm(model) {
                 });
             };
 
-            moveConveyors()
+            moveConveyors2()
+                .then(() => checkFalling(model))
+                .then(moveConveyors)
+                .then(() => checkFalling(model))
                 .then(turnGears)
                 .then(resolve);
 
@@ -262,7 +298,7 @@ function executeProgramm(model) {
                     let target = null;
                     const path = {x: robot.x, y: robot.y};
                     let distance = 0;
-                    while(!isWayBlocked(model, path, vec) && !target) {
+                    while(!isWayBlocked(model, path, vec) &&!isOutside(model, path) && !target) {
                         distance++;
                         path.x += vec.x;
                         path.y += vec.y;

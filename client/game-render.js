@@ -38,20 +38,27 @@ function updateRobot(robots) {
 }
 
 function animateConveyors() {
-    TweenLite.to('.conveyor', animationDuration, {
+    _animateConveyors('.conveyor');
+}
+function animateConveyors2() {
+    _animateConveyors('.conveyor2');
+}
+
+function _animateConveyors(conveyorSelector) {
+    TweenLite.to(conveyorSelector, animationDuration, {
         backgroundPositionX: tileSize,
         ease: Sine.easeInOut,
-        onComplete: () => TweenLite.set('.conveyor', {backgroundPositionX: 0})
+        onComplete: () => TweenLite.set(conveyorSelector, {backgroundPositionX: 0})
     });
-    TweenLite.to('.conveyorLeft > .bg', animationDuration, {
+    TweenLite.to(`${conveyorSelector}Left > .bg`, animationDuration, {
         rotation: -90,
         ease: Sine.easeInOut,
-        onComplete: () => TweenLite.set('.conveyorLeft > .bg', {rotation: 0})
+        onComplete: () => TweenLite.set(`${conveyorSelector}Left > .bg`, {rotation: 0})
     });
-    TweenLite.to('.conveyorRight > .bg', animationDuration, {
+    TweenLite.to(`${conveyorSelector}Right > .bg`, animationDuration, {
         rotation: 90,
         ease: Sine.easeInOut,
-        onComplete: () => TweenLite.set('.conveyorRight > .bg', {rotation: 0})
+        onComplete: () => TweenLite.set(`${conveyorSelector}Right > .bg`, {rotation: 0})
     });
 }
 

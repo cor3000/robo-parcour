@@ -11,6 +11,9 @@ const GEAR_RIGHT_TURN = 'gearRight';
 const CONVEYOR = 'conveyor';
 const CONVEYOR_LEFT_TURN = 'conveyorLeft';
 const CONVEYOR_RIGHT_TURN = 'conveyorRight';
+const CONVEYOR_2 = 'conveyor2';
+const CONVEYOR_2_LEFT_TURN = 'conveyor2Left';
+const CONVEYOR_2_RIGHT_TURN = 'conveyor2Right';
 
 const TILES = {
         0: 'empty',
@@ -35,12 +38,25 @@ const TILES = {
         29: `${CONVEYOR_RIGHT_TURN}-down`,
         30: `${CONVEYOR_RIGHT_TURN}-left`,
         31: `${CONVEYOR_RIGHT_TURN}-up`,
-        50: `${START}-right`,
-        51: `${START}-down`,
-        52: `${START}-left`,
-        53: `${START}-up`,
-        60: CHECKPOINT,
-        61: REPAIR,
+
+        50: `${CONVEYOR_2}-right`,
+        51: `${CONVEYOR_2}-down`,
+        52: `${CONVEYOR_2}-left`,
+        53: `${CONVEYOR_2}-up`,
+        54: `${CONVEYOR_2_LEFT_TURN}-right`,
+        55: `${CONVEYOR_2_LEFT_TURN}-down`,
+        56: `${CONVEYOR_2_LEFT_TURN}-left`,
+        57: `${CONVEYOR_2_LEFT_TURN}-up`,
+        58: `${CONVEYOR_2_RIGHT_TURN}-right`,
+        59: `${CONVEYOR_2_RIGHT_TURN}-down`,
+        60: `${CONVEYOR_2_RIGHT_TURN}-left`,
+        61: `${CONVEYOR_2_RIGHT_TURN}-up`,
+        90: `${START}-right`,
+        91: `${START}-down`,
+        92: `${START}-left`,
+        93: `${START}-up`,
+        94: CHECKPOINT,
+        95: REPAIR,
     };
 
 const DIRECTIONS = {
@@ -64,13 +80,13 @@ const testLevelData = {
         ], 
         items: [
             [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [ 0, 0,50, 0, 0, 0, 5,60, 0,61, 0, 0],
-            [ 0, 0, 0, 0, 2,25,22,22,26, 4, 0,60],
-            [ 0,50, 0,25,22,30,60,16,23,60, 0, 0],
-            [ 0,50, 0,24,20,29, 2,15,23,16, 2, 0],
+            [ 0, 0,90, 0, 0, 0, 5,94, 0,95, 0, 0],
+            [ 0, 0, 0, 0, 2,25,22,22,26, 4, 0,94],
+            [ 0,90, 0,25,22,30,94,16,23,94, 0, 0],
+            [ 0,90, 0,24,20,29, 2,15,23,16, 2, 0],
             [ 0, 0, 0, 0,15,24,20,20,27, 0, 0, 0],
-            [ 0, 0,50, 0,61, 0, 0,60, 3, 0, 0, 0],
-            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,60, 0]
+            [ 0, 0,90, 0,95, 0, 0,94, 3, 0, 0, 0],
+            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,94, 0]
         ]
     }, 
     extraTiles : [
@@ -79,7 +95,7 @@ const testLevelData = {
         {x: 11, y: 0, tileName: `${WALL}-up`},
         {x: 11, y: 7, tileName: `${WALL}-down`},
     ],
-    dimensions : {w: 12, h: 8}
+    dimensions : {width: 12, height: 8}
 };
 
 const level1Data = {
@@ -99,18 +115,18 @@ const level1Data = {
             [ 0, 0, 4, 0, 4, 0, 0, 4, 0, 4, 0, 0]
         ], 
         items: [
-            [ 0, 0, 0,23, 0, 0,23, 0,21, 0,23,61],
-            [ 0, 0, 0,23, 0,21,23, 0,21, 0, 0, 0],
-            [50, 0, 0,23, 0,21,23,60,21, 0, 0, 0],
+            [ 0, 0, 0,23, 0, 0,23, 0,21, 0,23,95],
+            [ 0, 0, 0,23, 0,21,23,94,21, 0, 0, 0],
+            [90, 0, 0,23, 0,21,23, 0,21, 0, 0, 0],
             [20,20,20,15, 0,21,23, 0,15,20,20,20],
-            [50, 0, 0, 0, 0,21,23, 0, 0, 0,60, 0],
-            [22,22,22,22,22, 0, 0,22,22,22,22,22],
+            [90, 0, 0, 0, 0,21,23, 0, 0, 0, 0, 0],
+            [52,52,52,52,52, 0, 0,22,22,22,22,22],
             [ 0,20,20,20,20, 0, 0,20,20,20,20,20],
-            [50, 0, 0, 0,61,21,23, 0, 0, 0,60, 0],
-            [20,20,20,15, 0,21,23, 0,22,22,22,22],
-            [50, 0, 0,23, 0,21,23, 0,21, 0, 0, 0],
-            [20,16, 0,23, 0,21,23,60,21, 0,16,20],
-            [61,21, 0,23, 0,21,23, 0,21, 0,23, 0]
+            [90, 0, 0, 0,95,51,23, 0, 0, 0,94, 0],
+            [20,20,20,15, 0,51,23, 0,22,22,22,22],
+            [90, 0, 0,23,94,51,23, 0,51, 0, 0, 0],
+            [20,16, 0,23, 0,51,23, 0,51, 0,16,20],
+            [95,21, 0,23, 0,51,23, 0,51, 0,23, 0]
         ]
     }, 
     extraTiles : [

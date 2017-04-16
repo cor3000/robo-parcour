@@ -61,12 +61,21 @@ body {
     background-size: 100%;
     background-position-x: 0px;
 }
+.tile.conveyor2 {
+    background-image: url('img/conveyor2.png');
+    background-size: 100%;
+    background-position-x: 0px;
+}
 .tile.conveyorLeft, 
-.tile.conveyorRight {
+.tile.conveyorRight,
+.tile.conveyor2Left, 
+.tile.conveyor2Right {
 	overflow: hidden;
 }
 .tile.conveyorLeft > .bg,
-.tile.conveyorRight > .bg {
+.tile.conveyorRight > .bg,
+.tile.conveyor2Left > .bg,
+.tile.conveyor2Right > .bg {
 	position: absolute;
 	width: 200%;
 	height: 200%;
@@ -81,6 +90,16 @@ body {
 	top: 0;
 	left: 0;
 	background-image: url('img/conveyor-turn-right.png');
+}
+.tile.conveyor2Left > .bg {
+	bottom: 0;
+	left: 0;
+	background-image: url('img/conveyor2-turn-left.png');
+}
+.tile.conveyor2Right > .bg {
+	top: 0;
+	left: 0;
+	background-image: url('img/conveyor2-turn-right.png');
 }
 .tile.crate {
     background-image: url('img/crate.png');
