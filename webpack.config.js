@@ -4,12 +4,12 @@ const webpack = require('webpack');
 module.exports = {
   entry: {
     test: './app.jsx',
-    playerClient: './client/player.js'
+    player: './client/player.js',
+    game: './client/game.js'
   },
   output: {
     filename: './build/[name].js'
   },
-
   devtool: 'cheap-module-source-map',
   module: {
     loaders: [{

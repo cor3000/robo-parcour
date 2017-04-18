@@ -14,8 +14,10 @@
   "dependencies": {
     "express": "^4.15.2",
     "express-ws": "^3.0.0",
+    "gsap": "^1.19.1",
     "helmet": "^3.5.0",
-    "localtunnel": "^1.8.2"
+    "localtunnel": "^1.8.2",
+    "reconnecting-websocket": "^3.0.3"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",

@@ -1,3 +1,7 @@
+import { connectToGameAs, gameMessageHandler } from './client-connect';
+import { initCommands, renderCommands } from './player-render';
+import { div } from './render';
+
 let client;
 
 let model = {

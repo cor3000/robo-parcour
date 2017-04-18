@@ -1,3 +1,5 @@
+import ReconnectingWebsocket from 'reconnecting-websocket';
+
 const CLOSE_GAME_ALREADY_EXISTS = 4001;
 const CLOSE_GAME_DOESNT_EXIST = 4002;
 const CLOSE_PLAYER_ALREADY_EXISTS = 4003;
@@ -87,3 +89,13 @@ const gameMessageHandler = handler => event => {
         .catch(error => console.log("ERROR onGameMessage", error));
 };
 
+export {
+    connectAsGame,
+    connectToGameAs, 
+    gameMessageHandler, 
+    CLOSE_GAME_ALREADY_EXISTS, 
+    CLOSE_GAME_DOESNT_EXIST, 
+    CLOSE_PLAYER_ALREADY_EXISTS, 
+    CONFIRM_PLAYER, 
+	CONFIRM_GAME
+};

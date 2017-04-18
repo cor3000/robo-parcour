@@ -1,19 +1,20 @@
+import { nextId } from './render';
 
-const ROBOT = 'robot';
-const START = 'start';
-const CRATE = 'crate';
-const WALL = 'wall';
-const PIT = 'pit';
-const CHECKPOINT = 'checkpoint';
-const REPAIR = 'repair';
-const GEAR_LEFT_TURN = 'gearLeft';
-const GEAR_RIGHT_TURN = 'gearRight';
-const CONVEYOR = 'conveyor';
-const CONVEYOR_LEFT_TURN = 'conveyorLeft';
-const CONVEYOR_RIGHT_TURN = 'conveyorRight';
-const CONVEYOR_2 = 'conveyor2';
-const CONVEYOR_2_LEFT_TURN = 'conveyor2Left';
-const CONVEYOR_2_RIGHT_TURN = 'conveyor2Right';
+export const ROBOT = 'robot';
+export const START = 'start';
+export const CRATE = 'crate';
+export const WALL = 'wall';
+export const PIT = 'pit';
+export const CHECKPOINT = 'checkpoint';
+export const REPAIR = 'repair';
+export const GEAR_LEFT_TURN = 'gearLeft';
+export const GEAR_RIGHT_TURN = 'gearRight';
+export const CONVEYOR = 'conveyor';
+export const CONVEYOR_LEFT_TURN = 'conveyorLeft';
+export const CONVEYOR_RIGHT_TURN = 'conveyorRight';
+export const CONVEYOR_2 = 'conveyor2';
+export const CONVEYOR_2_LEFT_TURN = 'conveyor2Left';
+export const CONVEYOR_2_RIGHT_TURN = 'conveyor2Right';
 
 const TILES = {
         0: 'empty',
@@ -144,7 +145,7 @@ const levels = {
     'Level 1' : level1Data
 };
 
-function loadLevel(levelId) {
+export function loadLevel(levelId) {
     const levelData = levels[levelId];
     const items = [];
     const createItem = ({x, y, tileName}) => {
@@ -156,7 +157,7 @@ function loadLevel(levelId) {
             type, x, y, dir
         });
     };
-    for(layer in levelData.items) {
+    for(let layer in levelData.items) {
         levelData.items[layer].forEach((row, y) => {
             row.forEach((tileId, x) => {
                 if(tileId !== 0 /*empty*/) {

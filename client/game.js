@@ -1,7 +1,12 @@
-let idCounter = 0;
-function nextId() {
-    return idCounter++;
-}
+import { connectAsGame, gameMessageHandler } from './client-connect';
+import { initField, renderField, renderRobot, updateRobot, 
+		animateConveyors, animateConveyors2, animateGears, 
+		animatePitDeath, animateEnergyDeath, animateLaserFire, 
+		animateRespawn } from './game-render';
+import { div, nextId } from './render';
+import { loadLevel, 
+		ROBOT, START, CRATE, WALL, PIT, CHECKPOINT, REPAIR, GEAR_LEFT_TURN, GEAR_RIGHT_TURN, CONVEYOR, 
+		CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN } from './levels';
 
 const gameModel = {
     robots : [],

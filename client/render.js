@@ -1,4 +1,9 @@
-function div(id) {
+let idCounter = 0;
+export function nextId() {
+    return idCounter++;
+}
+
+export function div(id) {
     let elem = document.getElementById(id);
     if(!elem) {
         elem = document.createElement('div');

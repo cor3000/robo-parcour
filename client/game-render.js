@@ -1,3 +1,9 @@
+import { div } from './render';
+import { TweenLite, TimelineLite, Sine }  from 'gsap';
+import { ROBOT, START, CRATE, WALL, PIT, CHECKPOINT, REPAIR, GEAR_LEFT_TURN, GEAR_RIGHT_TURN, CONVEYOR, 
+		CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN } from './levels';
+
+
 const NO_DELAY = 0;
 const tileSize = 50;
 const animationDuration = 0.5;
@@ -6,7 +12,7 @@ function tile(id, x, y, tileClass) {
     return div(id).size(tileSize, tileSize).atPos(x * tileSize, y * tileSize).withClass(`tile ${tileClass}`);
 }
 
-function initField(model) {
+export function initField(model) {
     const {width, height} = model.dimensions;
     const fieldElem = div('field').withClass('field').appendTo(document.body).size(width * tileSize, height * tileSize).get();
     const wallsElem = div('walls').withClass('walls shadows').appendTo(fieldElem).get();
@@ -16,13 +22,13 @@ function initField(model) {
     model.itemsElemId = itemsElem.id;
 }
 
-function renderRobot(model, robot) {
+export function renderRobot(model, robot) {
     tile(robot.id, robot.x, robot.y, 'robot')
         .rot(robot.dir * 90)
         .appendTo(div(model.itemsElemId).get());
 }
 
-function updateRobot(robots) {
+export function updateRobot(robots) {
     return new Promise((resolve, reject) => {
         const anim = new TimelineLite({onComplete: resolve});
         robots.forEach((robot, index) => {
@@ -37,10 +43,10 @@ function updateRobot(robots) {
     });
 }
 
-function animateConveyors() {
+export function animateConveyors() {
     _animateConveyors('.conveyor');
 }
-function animateConveyors2() {
+export function animateConveyors2() {
     _animateConveyors('.conveyor2');
 }
 
@@ -62,7 +68,7 @@ function _animateConveyors(conveyorSelector) {
     });
 }
 
-function animateGears() {
+export function animateGears() {
     TweenLite.to('.gearLeft', animationDuration, {
         rotation: '-=90',
         ease: Sine.easeInOut
@@ -73,7 +79,7 @@ function animateGears() {
     });
 }
 
-function animatePitDeath(robots) {
+export function animatePitDeath(robots) {
     return new Promise((resolve, reject) => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
@@ -84,7 +90,7 @@ function animatePitDeath(robots) {
     });
 }
 
-function animateEnergyDeath(robots) {
+export function animateEnergyDeath(robots) {
     return new Promise((resolve, reject) => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
@@ -95,7 +101,7 @@ function animateEnergyDeath(robots) {
     });
 }
 
-function animateRespawn(robots) {
+export function animateRespawn(robots) {
     if(robots.length === 0) return Promise.resolve();
     return new Promise((resolve, reject) => {
         const anim = new TimelineLite({onComplete: resolve});
@@ -115,7 +121,7 @@ function animateRespawn(robots) {
     });
 }
 
-function animateLaserFire(model, shots, callback) {
+export function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
         const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
             .appendTo(div(model.fieldElemId).get()).get();
@@ -144,7 +150,7 @@ function animateLaserFire(model, shots, callback) {
     });
 };
 
-function renderField(model) {
+export function renderField(model) {
     const fieldElem = div(model.fieldElemId).get();
     const itemsElem = div(model.itemsElemId).get();
     const wallsElem = div(model.wallsElemId).get();
