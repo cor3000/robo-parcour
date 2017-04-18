@@ -1,3 +1,5 @@
+import { TweenLite }  from 'gsap';
+
 let idCounter = 0;
 export function nextId() {
     return idCounter++;
@@ -8,7 +10,7 @@ export function div(id) {
     if(!elem) {
         elem = document.createElement('div');
         elem.id = id;
-    };
+    }
     const ops = {
         size: (w, h) => {
             elem.style.width = `${w}px`;

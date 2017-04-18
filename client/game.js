@@ -1,12 +1,12 @@
+import Promise from 'promise';
+
 import { connectAsGame, gameMessageHandler } from './client-connect';
 import { initField, renderField, renderRobot, updateRobot, 
 		animateConveyors, animateConveyors2, animateGears, 
 		animatePitDeath, animateEnergyDeath, animateLaserFire, 
 		animateRespawn } from './game-render';
 import { div, nextId } from './render';
-import { loadLevel, 
-		ROBOT, START, CRATE, WALL, PIT, CHECKPOINT, REPAIR, GEAR_LEFT_TURN, GEAR_RIGHT_TURN, CONVEYOR, 
-		CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN } from './levels';
+import { loadLevel, ITEM_TYPES } from './levels';
 
 const gameModel = {
     robots : [],
@@ -79,10 +79,10 @@ function isWayBlocked(model, pos, vec) {
     const newX = Math.round(pos.x + vec.x);
     const newY = Math.round(pos.y + vec.y);
     const dir = vec2Dir(vec);
-    if(itemsAt(model, newX, newY, CRATE)[0]) return true;
-    const wallsAtPos = itemsAt(model, pos.x, pos.y, WALL);
+    if(itemsAt(model, newX, newY, ITEM_TYPES.CRATE)[0]) return true;
+    const wallsAtPos = itemsAt(model, pos.x, pos.y, ITEM_TYPES.WALL);
     if(wallsAtPos.find(wall => wall.dir === dir)) return true;
-    const wallsAtNewPos = itemsAt(model, newX, newY, WALL);
+    const wallsAtNewPos = itemsAt(model, newX, newY, ITEM_TYPES.WALL);
     if(wallsAtNewPos.find(wall => wall.dir === ((dir + 2) % 4))) return true;
     return false;
 }
@@ -93,7 +93,7 @@ function tryMoveTo(model, robot, vec) {
     const newY = Math.round(robot.y + vec.y);
     const robotToPush = robotAt(model, newX, newY);
     if(robotToPush && !robotToPush.death) {
-        robotsToPush = tryMoveTo(model, robotToPush, vec);
+        const robotsToPush = tryMoveTo(model, robotToPush, vec);
         if(robotsToPush.length > 0) {
             return robotsToPush.concat(robot);
         } else {
@@ -109,8 +109,8 @@ function killRobot(death, robot) {
 }
 
 function checkFalling(model) {
-    return new Promise((resolve, reject) => {
-        const robotsFalling = robotsOn(model, PIT)
+    return new Promise(resolve => {
+        const robotsFalling = robotsOn(model, ITEM_TYPES.PIT)
                 .map(ri => ri.robot)
                 .concat(robotsOutside(model));
         
@@ -121,8 +121,8 @@ function checkFalling(model) {
     });
 }
 
-function checkEnergy(model, callback) {
-    return new Promise((resolve, reject) => {
+function checkEnergy(model) {
+    return new Promise(resolve => {
         const deadRobots = aliveRobots(model)
                 .filter(robot => robot.energy <= 0);
 
@@ -134,7 +134,7 @@ function checkEnergy(model, callback) {
 }
 
 function move(model, robot, dist) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         const vec = dir2Vec(robot.dir, dist);
         const steps = Math.abs(dist);
         
@@ -160,8 +160,8 @@ function move(model, robot, dist) {
     });
 }
 
-function turn(model, robot, speed, callback) {
-    return new Promise((resolve, reject) => {
+function turn(model, robot, speed) {
+    return new Promise(resolve => {
         if(robot.death) {
             resolve();
             return;
@@ -208,9 +208,9 @@ function nextRound(model) {
 }
 
 function cleanupRound(model) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         console.log('repairRobots');
-        robotsOn(model, [REPAIR, CHECKPOINT]).forEach(ri => {
+        robotsOn(model, [ITEM_TYPES.REPAIR, ITEM_TYPES.CHECKPOINT]).forEach(ri => {
             ri.robot.energy = Math.min(ri.robot.energy + 1, 10);
         });
         const respawnedRobots = model.robots
@@ -231,18 +231,18 @@ function cleanupRound(model) {
 function executeProgramm(model) {
     
     const moveWorld = function() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             const moveConveyors2 = () => {
-                return new Promise((resolve, reject) => {
-                    robotsOn(model, [CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])
+                return new Promise(resolve => {
+                    robotsOn(model, [ITEM_TYPES.CONVEYOR_2, ITEM_TYPES.CONVEYOR_2_LEFT_TURN, ITEM_TYPES.CONVEYOR_2_RIGHT_TURN])
                         .forEach(rc => {
                             const vec = dir2Vec(rc.item.dir);
                             rc.robot.x += vec.x;
                             rc.robot.y += vec.y;
-                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])[0]
+                            const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, [ITEM_TYPES.CONVEYOR_2_LEFT_TURN, ITEM_TYPES.CONVEYOR_2_RIGHT_TURN])[0]
                             if(conveyorTurn) {
-                                if(conveyorTurn.type === CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
-                                if(conveyorTurn.type === CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
                             }
                         });
 
@@ -251,19 +251,21 @@ function executeProgramm(model) {
                 });
             };
             const moveConveyors = () => {
-                return new Promise((resolve, reject) => {
-                    robotsOn(model, [CONVEYOR, CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])
+                return new Promise(resolve => {
+                    robotsOn(model, [ITEM_TYPES.CONVEYOR, ITEM_TYPES.CONVEYOR_LEFT_TURN, ITEM_TYPES.CONVEYOR_RIGHT_TURN, 
+                                    ITEM_TYPES.CONVEYOR_2, ITEM_TYPES.CONVEYOR_2_LEFT_TURN, ITEM_TYPES.CONVEYOR_2_RIGHT_TURN])
                         .forEach(rc => {
                             const vec = dir2Vec(rc.item.dir);
                             rc.robot.x += vec.x;
                             rc.robot.y += vec.y;
                             const conveyorTurn = itemsAt(model, rc.robot.x, rc.robot.y, 
-                                        [CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN])[0]
+                                        [ITEM_TYPES.CONVEYOR_LEFT_TURN, ITEM_TYPES.CONVEYOR_RIGHT_TURN, 
+                                        ITEM_TYPES.CONVEYOR_2_LEFT_TURN, ITEM_TYPES.CONVEYOR_2_RIGHT_TURN])[0]
                             if(conveyorTurn) {
-                                if(conveyorTurn.type === CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
-                                if(conveyorTurn.type === CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
-                                if(conveyorTurn.type === CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
-                                if(conveyorTurn.type === CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_RIGHT_TURN) rc.robot.dir += 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_2_LEFT_TURN) rc.robot.dir -= 1;
+                                if(conveyorTurn.type === ITEM_TYPES.CONVEYOR_2_RIGHT_TURN) rc.robot.dir += 1;
                             }
                         });
 
@@ -274,11 +276,11 @@ function executeProgramm(model) {
             };
 
             const turnGears = () => {
-                return new Promise((resolve, reject) => {
-                    robotsOn(model, [GEAR_LEFT_TURN, GEAR_RIGHT_TURN])
+                return new Promise(resolve => {
+                    robotsOn(model, [ITEM_TYPES.GEAR_LEFT_TURN, ITEM_TYPES.GEAR_RIGHT_TURN])
                         .forEach(rg => {
-                            if(rg.item.type === GEAR_LEFT_TURN) rg.robot.dir -= 1;
-                            if(rg.item.type === GEAR_RIGHT_TURN) rg.robot.dir += 1;
+                            if(rg.item.type === ITEM_TYPES.GEAR_LEFT_TURN) rg.robot.dir -= 1;
+                            if(rg.item.type === ITEM_TYPES.GEAR_RIGHT_TURN) rg.robot.dir += 1;
                         });
                     animateGears();
                     updateRobot(model.robots).then(resolve);
@@ -296,7 +298,7 @@ function executeProgramm(model) {
     };
 
     const fireLasers = function() {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             console.log('fireLasers');
             const beams = aliveRobots(model).map(robot => {
                     const vec = dir2Vec(robot.dir);
@@ -321,7 +323,6 @@ function executeProgramm(model) {
             if(beams.length > 0) {
                 animateLaserFire(model, beams, () => {
                     //handle damage
-                    const killedRobots = [];
                     beams.filter(beam => beam.to.energy)
                         .forEach(beam => {
                             const target = beam.to;
@@ -336,12 +337,12 @@ function executeProgramm(model) {
     };
 
     const handleCheckpoints = () => {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             console.log('handleCheckpoints');
-            robotsOn(model, [START, CHECKPOINT, REPAIR]).forEach(ri => {
+            robotsOn(model, [ITEM_TYPES.START, ITEM_TYPES.CHECKPOINT, ITEM_TYPES.REPAIR]).forEach(ri => {
                 const {item, robot} = ri;
                 ri.robot.respawnId = item.id;
-                if(item.type === CHECKPOINT) {
+                if(item.type === ITEM_TYPES.CHECKPOINT) {
                     const oldCheckpointIndex = model.checkpoints.indexOf(robot.checkpointId);
                     const newCheckpointIndex = model.checkpoints.indexOf(item.id);
                     if(newCheckpointIndex - oldCheckpointIndex === 1) {
@@ -355,7 +356,7 @@ function executeProgramm(model) {
     };
 
     const executeCommands = function(roundCommands) {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             const commandCard = roundCommands[0];
             if(commandCard) {
                 const commandInterface = robotCommands(model, robotById(model, commandCard.robotId));
@@ -388,7 +389,7 @@ function executeProgramm(model) {
 function initRobot(model, robotId) {
     const robot = robotById(model, robotId);
     if(!robot) {
-        const starts = model.items.filter(item => item.type === START);
+        const starts = model.items.filter(item => item.type === ITEM_TYPES.START);
         let start;
         while(!start || start.ownerId) {
             const startIndex = Math.floor(Math.random() * starts.length);
@@ -396,7 +397,7 @@ function initRobot(model, robotId) {
         }
         const robot = {
             id: robotId,
-            type: ROBOT,
+            type: ITEM_TYPES.ROBOT,
             dir: start.dir,
             energy: 10,
             lives: 3,
@@ -440,7 +441,7 @@ function initGame(model, options) {
     model.items = items;
     model.dimensions = dimensions;
     model.checkpoints = [];
-    const checkpoints = model.items.filter(item => item.type === CHECKPOINT);
+    const checkpoints = model.items.filter(item => item.type === ITEM_TYPES.CHECKPOINT);
     for(let i = 0; i < options.numCheckpoints; i++) {
         const checkpointIndex = Math.floor(Math.random() * checkpoints.length);
         const checkpoint = checkpoints.splice(checkpointIndex, 1)[0];

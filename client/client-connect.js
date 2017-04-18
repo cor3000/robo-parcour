@@ -1,3 +1,4 @@
+import Promise from 'promise';
 import ReconnectingWebsocket from 'reconnecting-websocket';
 
 const CLOSE_GAME_ALREADY_EXISTS = 4001;
@@ -12,7 +13,7 @@ const host = window.location.host;
 const endpointUrl = `${protocol}//${host}/ws`;
 
 function parseMessage(msg) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         resolve(JSON.parse(msg));
     });
 }

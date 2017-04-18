@@ -17,18 +17,42 @@
     "gsap": "^1.19.1",
     "helmet": "^3.5.0",
     "localtunnel": "^1.8.2",
+    "promise": "^7.1.1",
     "reconnecting-websocket": "^3.0.3"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",
+    "babel-eslint": "^7.2.2",
     "babel-loader": "^6.4.1",
     "babel-plugin-transform-es2015-destructuring": "^6.23.0",
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-preset-es2015": "^6.24.1",
     "babel-preset-es2016": "^6.24.1",
     "babel-preset-react": "^6.24.1",
+    "eslint": "^3.19.0",
+    "eslint-loader": "^1.7.1",
     "webpack": "^2.4.1",
     "webpack-dev-server": "^2.4.2"
+  },
+  "eslintConfig": {
+    "parser": "babel-eslint",
+    "parserOptions": {
+        "ecmaVersion6": 6,
+        "ecmaFeatures": {
+            "jsx": true
+        }
+    },
+    "extends": [
+      "eslint:recommended"
+    ],
+    "rules": {
+      "no-console": "off",
+      "no-unused-vars": "warn"
+    },
+    "env": {
+        "browser": true,
+        "node": true
+    }
   },
   "repository": {
     "type": "git",

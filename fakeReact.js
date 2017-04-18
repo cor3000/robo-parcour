@@ -1,7 +1,6 @@
 /*adapted from http://stackoverflow.com/questions/30430982/can-i-use-jsx-without-react-to-inline-html-in-script*/
 class Component {
-	render(props, children) {}
-};
+}
 
 const React = {
     createElement: function (tag, attrs, children) {

@@ -1,63 +1,65 @@
 import { nextId } from './render';
 
-export const ROBOT = 'robot';
-export const START = 'start';
-export const CRATE = 'crate';
-export const WALL = 'wall';
-export const PIT = 'pit';
-export const CHECKPOINT = 'checkpoint';
-export const REPAIR = 'repair';
-export const GEAR_LEFT_TURN = 'gearLeft';
-export const GEAR_RIGHT_TURN = 'gearRight';
-export const CONVEYOR = 'conveyor';
-export const CONVEYOR_LEFT_TURN = 'conveyorLeft';
-export const CONVEYOR_RIGHT_TURN = 'conveyorRight';
-export const CONVEYOR_2 = 'conveyor2';
-export const CONVEYOR_2_LEFT_TURN = 'conveyor2Left';
-export const CONVEYOR_2_RIGHT_TURN = 'conveyor2Right';
+export const ITEM_TYPES = {
+    ROBOT: 'robot',
+    START: 'start',
+    CRATE: 'crate',
+    WALL: 'wall',
+    PIT: 'pit',
+    CHECKPOINT: 'checkpoint',
+    REPAIR: 'repair',
+    GEAR_LEFT_TURN: 'gearLeft',
+    GEAR_RIGHT_TURN: 'gearRight',
+    CONVEYOR: 'conveyor',
+    CONVEYOR_LEFT_TURN: 'conveyorLeft',
+    CONVEYOR_RIGHT_TURN: 'conveyorRight',
+    CONVEYOR_2: 'conveyor2',
+    CONVEYOR_2_LEFT_TURN: 'conveyor2Left',
+    CONVEYOR_2_RIGHT_TURN: 'conveyor2Right'
+}
 
-const TILES = {
+export const TILES = {
         0: 'empty',
-        1: CRATE, 
-        2: PIT, 
-        3: `${WALL}-right`,
-        4: `${WALL}-down`,
-        5: `${WALL}-left`,
-        6: `${WALL}-up`,
+        1: ITEM_TYPES.CRATE, 
+        2: ITEM_TYPES.PIT, 
+        3: `${ITEM_TYPES.WALL}-right`,
+        4: `${ITEM_TYPES.WALL}-down`,
+        5: `${ITEM_TYPES.WALL}-left`,
+        6: `${ITEM_TYPES.WALL}-up`,
         14: 'spike',
-        15: GEAR_LEFT_TURN,
-        16: GEAR_RIGHT_TURN,
-        20: `${CONVEYOR}-right`,
-        21: `${CONVEYOR}-down`,
-        22: `${CONVEYOR}-left`,
-        23: `${CONVEYOR}-up`,
-        24: `${CONVEYOR_LEFT_TURN}-right`,
-        25: `${CONVEYOR_LEFT_TURN}-down`,
-        26: `${CONVEYOR_LEFT_TURN}-left`,
-        27: `${CONVEYOR_LEFT_TURN}-up`,
-        28: `${CONVEYOR_RIGHT_TURN}-right`,
-        29: `${CONVEYOR_RIGHT_TURN}-down`,
-        30: `${CONVEYOR_RIGHT_TURN}-left`,
-        31: `${CONVEYOR_RIGHT_TURN}-up`,
+        15: ITEM_TYPES.GEAR_LEFT_TURN,
+        16: ITEM_TYPES.GEAR_RIGHT_TURN,
+        20: `${ITEM_TYPES.CONVEYOR}-right`,
+        21: `${ITEM_TYPES.CONVEYOR}-down`,
+        22: `${ITEM_TYPES.CONVEYOR}-left`,
+        23: `${ITEM_TYPES.CONVEYOR}-up`,
+        24: `${ITEM_TYPES.CONVEYOR_LEFT_TURN}-right`,
+        25: `${ITEM_TYPES.CONVEYOR_LEFT_TURN}-down`,
+        26: `${ITEM_TYPES.CONVEYOR_LEFT_TURN}-left`,
+        27: `${ITEM_TYPES.CONVEYOR_LEFT_TURN}-up`,
+        28: `${ITEM_TYPES.CONVEYOR_RIGHT_TURN}-right`,
+        29: `${ITEM_TYPES.CONVEYOR_RIGHT_TURN}-down`,
+        30: `${ITEM_TYPES.CONVEYOR_RIGHT_TURN}-left`,
+        31: `${ITEM_TYPES.CONVEYOR_RIGHT_TURN}-up`,
 
-        50: `${CONVEYOR_2}-right`,
-        51: `${CONVEYOR_2}-down`,
-        52: `${CONVEYOR_2}-left`,
-        53: `${CONVEYOR_2}-up`,
-        54: `${CONVEYOR_2_LEFT_TURN}-right`,
-        55: `${CONVEYOR_2_LEFT_TURN}-down`,
-        56: `${CONVEYOR_2_LEFT_TURN}-left`,
-        57: `${CONVEYOR_2_LEFT_TURN}-up`,
-        58: `${CONVEYOR_2_RIGHT_TURN}-right`,
-        59: `${CONVEYOR_2_RIGHT_TURN}-down`,
-        60: `${CONVEYOR_2_RIGHT_TURN}-left`,
-        61: `${CONVEYOR_2_RIGHT_TURN}-up`,
-        90: `${START}-right`,
-        91: `${START}-down`,
-        92: `${START}-left`,
-        93: `${START}-up`,
-        94: CHECKPOINT,
-        95: REPAIR,
+        50: `${ITEM_TYPES.CONVEYOR_2}-right`,
+        51: `${ITEM_TYPES.CONVEYOR_2}-down`,
+        52: `${ITEM_TYPES.CONVEYOR_2}-left`,
+        53: `${ITEM_TYPES.CONVEYOR_2}-up`,
+        54: `${ITEM_TYPES.CONVEYOR_2_LEFT_TURN}-right`,
+        55: `${ITEM_TYPES.CONVEYOR_2_LEFT_TURN}-down`,
+        56: `${ITEM_TYPES.CONVEYOR_2_LEFT_TURN}-left`,
+        57: `${ITEM_TYPES.CONVEYOR_2_LEFT_TURN}-up`,
+        58: `${ITEM_TYPES.CONVEYOR_2_RIGHT_TURN}-right`,
+        59: `${ITEM_TYPES.CONVEYOR_2_RIGHT_TURN}-down`,
+        60: `${ITEM_TYPES.CONVEYOR_2_RIGHT_TURN}-left`,
+        61: `${ITEM_TYPES.CONVEYOR_2_RIGHT_TURN}-up`,
+        90: `${ITEM_TYPES.START}-right`,
+        91: `${ITEM_TYPES.START}-down`,
+        92: `${ITEM_TYPES.START}-left`,
+        93: `${ITEM_TYPES.START}-up`,
+        94: ITEM_TYPES.CHECKPOINT,
+        95: ITEM_TYPES.REPAIR,
     };
 
 const DIRECTIONS = {
@@ -91,10 +93,10 @@ const testLevelData = {
         ]
     }, 
     extraTiles : [
-        {x: 0, y: 0, tileName: `${WALL}-up`},
-        {x: 0, y: 7, tileName: `${WALL}-down`},
-        {x: 11, y: 0, tileName: `${WALL}-up`},
-        {x: 11, y: 7, tileName: `${WALL}-down`},
+        {x: 0, y: 0, tileName: `${ITEM_TYPES.WALL}-up`},
+        {x: 0, y: 7, tileName: `${ITEM_TYPES.WALL}-down`},
+        {x: 11, y: 0, tileName: `${ITEM_TYPES.WALL}-up`},
+        {x: 11, y: 7, tileName: `${ITEM_TYPES.WALL}-down`},
     ],
     dimensions : {width: 12, height: 8}
 };
@@ -138,7 +140,6 @@ const level1Data = {
     ],
     dimensions : {width: 12, height: 12}
 };
-
 
 const levels = {
     'Test Level' : testLevelData,

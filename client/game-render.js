@@ -1,7 +1,8 @@
-import { div } from './render';
+import Promise from 'promise';
 import { TweenLite, TimelineLite, Sine }  from 'gsap';
-import { ROBOT, START, CRATE, WALL, PIT, CHECKPOINT, REPAIR, GEAR_LEFT_TURN, GEAR_RIGHT_TURN, CONVEYOR, 
-		CONVEYOR_LEFT_TURN, CONVEYOR_RIGHT_TURN, CONVEYOR_2, CONVEYOR_2_LEFT_TURN, CONVEYOR_2_RIGHT_TURN } from './levels';
+
+import { div } from './render';
+import { ITEM_TYPES } from './levels';
 
 
 const NO_DELAY = 0;
@@ -29,9 +30,9 @@ export function renderRobot(model, robot) {
 }
 
 export function updateRobot(robots) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         const anim = new TimelineLite({onComplete: resolve});
-        robots.forEach((robot, index) => {
+        robots.forEach((robot) => {
             const opts = {
                     x: robot.x * tileSize, 
                     y: robot.y * tileSize, 
@@ -80,7 +81,7 @@ export function animateGears() {
 }
 
 export function animatePitDeath(robots) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
                 scale: 0.2, opacity: 0.5, rotation: '+=720', 
@@ -91,7 +92,7 @@ export function animatePitDeath(robots) {
 }
 
 export function animateEnergyDeath(robots) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
                 scale: 1.5, opacity: 0.5, rotation: '+=360',
@@ -103,9 +104,9 @@ export function animateEnergyDeath(robots) {
 
 export function animateRespawn(robots) {
     if(robots.length === 0) return Promise.resolve();
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
         const anim = new TimelineLite({onComplete: resolve});
-        robots.forEach((robot, index) => {
+        robots.forEach((robot) => {
             const robotDiv = div(robot.id).get();
             anim.add(TweenLite.set(robotDiv, {scale: 2, opacity: 0}), NO_DELAY);
             const opts = {
@@ -126,7 +127,7 @@ export function animateLaserFire(model, shots, callback) {
         const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
             .appendTo(div(model.fieldElemId).get()).get();
 
-        const isRobot = shot.to.type === ROBOT;
+        const isRobot = shot.to.type === ITEM_TYPES.ROBOT;
         const isShort = shot.distance <= (isRobot ? 1 : 0);
         TweenLite.set(beam, {
             rotation: shot.from.dir * 90,
@@ -148,7 +149,7 @@ export function animateLaserFire(model, shots, callback) {
         }
         TweenLite.to(beam, animationDuration, opts);
     });
-};
+}
 
 export function renderField(model) {
     const fieldElem = div(model.fieldElemId).get();
@@ -163,18 +164,18 @@ export function renderField(model) {
             (item.ownerId ? ` ${item.ownerId}` : '');
         const fieldTile = tile(domId, col, row, styleClass)
             .rot(item.dir * 90);
-        if(type === CHECKPOINT && item.index >= 0) {
+        if(type === ITEM_TYPES.CHECKPOINT && item.index >= 0) {
             fieldTile.attr('data-checkpoint-index', item.index + 1);
         }
 
-        if(type === WALL || type === CRATE) {
+        if(type === ITEM_TYPES.WALL || type === ITEM_TYPES.CRATE) {
             fieldTile.appendTo(wallsElem);
-        } else if(type === PIT || type === START) {
+        } else if(type === ITEM_TYPES.PIT || type === ITEM_TYPES.START) {
             fieldTile.insertBefore(fieldElem, wallsElem);
         } else {
             fieldTile.appendTo(itemsElem);
         }
-        if(item.type === CONVEYOR_LEFT_TURN || item.type === CONVEYOR_RIGHT_TURN) {
+        if(item.type === ITEM_TYPES.CONVEYOR_LEFT_TURN || item.type === ITEM_TYPES.CONVEYOR_RIGHT_TURN) {
             div(domId + '-bg').withClass('bg').appendTo(fieldTile.get());
         }
     });

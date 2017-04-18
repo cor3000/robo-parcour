@@ -19,7 +19,7 @@ export function renderCommands(robot, onSelect, onUnselect) {
         commandElem.addEventListener('click', () => onUnselect(robot, command, index));
     });
     robot.lockedCommands.forEach((command, index) => {
-        const commandElem = commandCard(`${robot.id}-command-selected-${index}`, 'locked', command)
+        commandCard(`${robot.id}-command-selected-${index}`, 'locked', command)
             .appendTo(commandsElem).get();
     });
     robot.availableCommands.forEach((command, index) => {

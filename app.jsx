@@ -15,7 +15,7 @@ class Bla extends Component {
 	}
 	
 	render(props, children) {
-		return <div class='bla' {...props}>
+		return <div className='bla' {...props}>
 			{children}
 		</div>
 	}
