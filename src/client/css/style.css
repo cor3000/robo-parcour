@@ -7,7 +7,7 @@ body {
 .field {
     position: relative;
     margin: 15px;
-    background-image: url('img/metal-floor.png');
+    background-image: url('../img/metal-floor.png');
     background-size: 50px;
 }
 
@@ -32,37 +32,37 @@ body {
     right: 0;
 	top: 0;
 	bottom: 0;
-    background-image: url('img/wall.png');
+    background-image: url('../img/wall.png');
     background-size: 10% 100%;
     background-position: right;
     background-repeat: no-repeat;
 }
 
 .tile.beam {
-    background-image: url('img/laser-red.png');
+    background-image: url('../img/laser-red.png');
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center 62%;
 }
 .tile.pit {
-    background-image: url('img/pit.png');
+    background-image: url('../img/pit.png');
     background-size: 100%;
 }
 .tile.gearLeft {
-    background-image: url('img/gear-left.png');
+    background-image: url('../img/gear-left.png');
     background-size: 100%;
 }
 .tile.gearRight {
-    background-image: url('img/gear-right.png');
+    background-image: url('../img/gear-right.png');
     background-size: 100%;
 }
 .tile.conveyor {
-    background-image: url('img/conveyor.png');
+    background-image: url('../img/conveyor.png');
     background-size: 100%;
     background-position-x: 0px;
 }
 .tile.conveyor2 {
-    background-image: url('img/conveyor2.png');
+    background-image: url('../img/conveyor2.png');
     background-size: 100%;
     background-position-x: 0px;
 }
@@ -84,25 +84,25 @@ body {
 .tile.conveyorLeft > .bg {
 	bottom: 0;
 	left: 0;
-	background-image: url('img/conveyor-turn-left.png');
+	background-image: url('../img/conveyor-turn-left.png');
 }
 .tile.conveyorRight > .bg {
 	top: 0;
 	left: 0;
-	background-image: url('img/conveyor-turn-right.png');
+	background-image: url('../img/conveyor-turn-right.png');
 }
 .tile.conveyor2Left > .bg {
 	bottom: 0;
 	left: 0;
-	background-image: url('img/conveyor2-turn-left.png');
+	background-image: url('../img/conveyor2-turn-left.png');
 }
 .tile.conveyor2Right > .bg {
 	top: 0;
 	left: 0;
-	background-image: url('img/conveyor2-turn-right.png');
+	background-image: url('../img/conveyor2-turn-right.png');
 }
 .tile.crate {
-    background-image: url('img/crate.png');
+    background-image: url('../img/crate.png');
     background-size: 100%;
     background-repeat: no-repeat;
     border-radius: 10px;
@@ -110,12 +110,12 @@ body {
 }
 
 .tile.repair {
-    background-image: url('img/wrench.png');
+    background-image: url('../img/wrench.png');
     background-size: 100%;
 }
 
 .tile.checkpoint {
-    background-image: url('img/wrench.png');
+    background-image: url('../img/wrench.png');
     background-repeat: no-repeat;
     background-size: 100%;
 }
@@ -131,7 +131,7 @@ body {
     right: 0px;
     top: -2px;
     bottom: 0px;
-    background-image: url('img/checkpoint.png');
+    background-image: url('../img/checkpoint.png');
     background-size: 100%; 
     background-repeat: no-repeat;
     content: ' ';
@@ -151,7 +151,7 @@ body {
 }
 
 .tile.start {
-    background-image: url('img/start.png');
+    background-image: url('../img/start.png');
     background-size: 97%;
     background-repeat: no-repeat;
     background-position: center;
@@ -176,19 +176,19 @@ body {
 }
 .tile.robot0::after,
 .tile#robot0 {
-    background-image: url('img/robot_1.png');
+    background-image: url('../img/robot_1.png');
 }
 .tile.robot1::after,
 .tile#robot1 {
-    background-image: url('img/robot_2.png');
+    background-image: url('../img/robot_2.png');
 }
 .tile.robot2::after,
 .tile#robot2 {
-    background-image: url('img/robot_3.png');
+    background-image: url('../img/robot_3.png');
 }
 .tile.robot3::after,
 .tile#robot3 {
-    background-image: url('img/robot_4.png');
+    background-image: url('../img/robot_4.png');
 }
 
 
@@ -259,11 +259,11 @@ body {
 .robotCommands .command.uturn:before {
 	background-color: Black;
 	/*-webkit-mask: url('img/uturn.svg') 50% 20%/70% no-repeat;*/
-	-webkit-mask: url('img/uturn.svg');
+	-webkit-mask: url('../img/uturn.svg');
 	-webkit-mask-size: 70%;
 	-webkit-mask-repeat: no-repeat;
 	-webkit-mask-position: 50% 30%;
-	mask: url('img/uturn.svg');
+	mask: url('../img/uturn.svg');
 	mask-size: 70%;
 	mask-repeat: no-repeat;
 	mask-position: 50% 30%;
