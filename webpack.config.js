@@ -11,6 +11,14 @@ module.exports = {
     filename: './build/[name].js'
   },
   devtool: 'cheap-module-source-map',
+  devServer: {
+    proxy: {
+      "/ws": {
+		target: "ws://localhost:8000",
+		ws: true
+      }
+    }    
+  },
   module: {
     loaders: [{
       test: /\.jsx?$/,
