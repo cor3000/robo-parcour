@@ -1,5 +1,10 @@
 import Promise from 'promise';
 
+/* eslint-disable no-unused-vars */
+import React from './fakeReact';
+import GameConnectForm from './GameConnectForm';
+/* eslint-enable no-unused-vars */
+
 import { connectAsGame, gameMessageHandler } from './client-connect';
 import { initField, renderField, renderRobot, updateRobot, 
 		animateConveyors, animateConveyors2, animateGears, 
@@ -478,9 +483,10 @@ function pickRandomFromAvailable(robot) {
 }
 */
 
-let client;
-const connectForm = document.getElementById('connect');
+const connectForm = <GameConnectForm/>;
+document.body.append(connectForm);
 
+let client;
 connectForm.addEventListener('submit', event => {
     event.preventDefault();
     const gameId = connectForm.querySelector('#gameId').value;
