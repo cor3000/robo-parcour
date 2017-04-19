@@ -169,7 +169,7 @@ export function renderField(model) {
             fieldTile.attr('data-checkpoint-index', item.index + 1);
         }
 
-        if(type === ITEM_TYPES.WALL || type === ITEM_TYPES.CRATE || ITEM_TYPES.LASER) {
+        if(type === ITEM_TYPES.WALL || type === ITEM_TYPES.CRATE || type === ITEM_TYPES.LASER) {
             fieldTile.appendTo(wallsElem);
         } else if(type === ITEM_TYPES.PIT || type === ITEM_TYPES.START) {
             fieldTile.insertBefore(fieldElem, wallsElem);
