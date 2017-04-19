@@ -8,6 +8,7 @@ export const ITEM_TYPES = {
     PIT: 'pit',
     CHECKPOINT: 'checkpoint',
     REPAIR: 'repair',
+    LASER: 'laser',
     GEAR_LEFT_TURN: 'gearLeft',
     GEAR_RIGHT_TURN: 'gearRight',
     CONVEYOR: 'conveyor',
@@ -26,6 +27,10 @@ export const TILES = {
         4: `${ITEM_TYPES.WALL}-down`,
         5: `${ITEM_TYPES.WALL}-left`,
         6: `${ITEM_TYPES.WALL}-up`,
+        7: `${ITEM_TYPES.LASER}-right`,
+        8: `${ITEM_TYPES.LASER}-down`,
+        9: `${ITEM_TYPES.LASER}-left`,
+        10: `${ITEM_TYPES.LASER}-up`,
         14: 'spike',
         15: ITEM_TYPES.GEAR_LEFT_TURN,
         16: ITEM_TYPES.GEAR_RIGHT_TURN,
@@ -129,14 +134,10 @@ const level1Data = {
             [22,22,22,15, 0,51,23, 0,22,22,22,22],
             [90, 0, 0,23,94,51,23, 0,51, 0, 0, 0],
             [20,16, 0,23, 0,51,23, 0,51, 0,16,20],
-            [95,21, 0,23, 0,51,23, 0,51, 0,23, 0]
+            [95,21, 0,23, 0,51,23, 0,51,10,23, 0]
         ]
     }, 
     extraTiles : [
-     /*   {x: 0, y: 0, tileName: `${WALL}-up`},
-        {x: 0, y: 7, tileName: `${WALL}-down`},
-        {x: 11, y: 0, tileName: `${WALL}-up`},
-        {x: 11, y: 7, tileName: `${WALL}-down`}*/
     ],
     dimensions : {width: 12, height: 12}
 };

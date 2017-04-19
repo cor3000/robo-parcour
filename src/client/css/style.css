@@ -38,11 +38,21 @@ body {
     background-repeat: no-repeat;
 }
 
+.tile.laser {
+    background-image: url('../img/laser-short.png');
+    background-size: 20%;
+    background-repeat: no-repeat;
+	background-position: 6% center;
+}
+
 .tile.beam {
     background-image: url('../img/laser-red.png');
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center 62%;
+}
+.tile.beam.beam-wall {
+    background-position: center 50%;
 }
 .tile.pit {
     background-image: url('../img/pit.png');

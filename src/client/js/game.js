@@ -50,6 +50,10 @@ function itemById(model, id) {
     return model.items.find(item => item.id === id);
 }
 
+function itemsByType(model, type) {
+	return model.items.filter(item => item.type === type)
+}
+
 function robotById(model, id) {
     return model.robots.find(robot => robot.id === id);
 }
@@ -303,7 +307,7 @@ function executeProgramm(model) {
     const fireLasers = function() {
         return new Promise(resolve => {
             console.log('fireLasers');
-            const beams = aliveRobots(model).map(robot => {
+            const robotBeams = aliveRobots(model).map(robot => {
                     const vec = dir2Vec(robot.dir);
                     let target = null;
                     const path = {x: robot.x, y: robot.y};
@@ -323,6 +327,27 @@ function executeProgramm(model) {
                     return beam;
                 });
 
+			const wallBeams = itemsByType(model, ITEM_TYPES.LASER).map(laser => {
+                    const vec = dir2Vec(laser.dir);
+                    const path = {x: laser.x, y: laser.y};
+                    let target = robotAt(model, path.x, path.y);
+                    let distance = 0;
+                    while(!isWayBlocked(model, path, vec) &&!isOutside(model, path) && !target) {
+                        distance++;
+                        path.x += vec.x;
+                        path.y += vec.y;
+                        target = robotAt(model, path.x, path.y);
+                    }
+                    const beam = {
+                        from: laser,
+                        to: target || path,
+                        vec: vec,
+                        distance: distance
+                    };
+                    return beam;
+                });
+
+			const beams = robotBeams.concat(wallBeams);
             if(beams.length > 0) {
                 animateLaserFire(model, beams, () => {
                     //handle damage

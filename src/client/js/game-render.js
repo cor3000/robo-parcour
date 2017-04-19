@@ -123,8 +123,10 @@ export function animateRespawn(robots) {
 
 export function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
-        const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * 0.5, shot.from.y + shot.vec.y * 0.5, 'beam')
-            .appendTo(div(model.fieldElemId).get()).get();
+		const isWallLaser = shot.from.type === ITEM_TYPES.LASER
+		const startOffset = isWallLaser ? 0.15 : 0.5;
+        const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * startOffset, shot.from.y + shot.vec.y * startOffset, 
+				'beam' + (isWallLaser ? ' beam-wall' : '')).appendTo(div(model.fieldElemId).get()).get();
 
         const isRobot = shot.to.type === ITEM_TYPES.ROBOT;
         const isShort = shot.distance <= (isRobot ? 1 : 0);
@@ -167,7 +169,7 @@ export function renderField(model) {
             fieldTile.attr('data-checkpoint-index', item.index + 1);
         }
 
-        if(type === ITEM_TYPES.WALL || type === ITEM_TYPES.CRATE) {
+        if(type === ITEM_TYPES.WALL || type === ITEM_TYPES.CRATE || ITEM_TYPES.LASER) {
             fieldTile.appendTo(wallsElem);
         } else if(type === ITEM_TYPES.PIT || type === ITEM_TYPES.START) {
             fieldTile.insertBefore(fieldElem, wallsElem);
