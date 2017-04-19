@@ -1,4 +1,3 @@
-import Promise from 'promise';
 import { TweenLite, TimelineLite, Sine }  from 'gsap';
 
 import { div } from './render';

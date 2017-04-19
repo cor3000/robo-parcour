@@ -1,4 +1,3 @@
-import Promise from 'promise';
 import ReconnectingWebsocket from 'reconnecting-websocket';
 
 const CLOSE_GAME_ALREADY_EXISTS = 4001;

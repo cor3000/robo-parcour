@@ -1,5 +1,3 @@
-import Promise from 'promise';
-
 /* eslint-disable no-unused-vars */
 import React from './fakeReact';
 import GameConnectForm from './GameConnectForm';

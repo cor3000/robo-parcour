@@ -5,11 +5,11 @@
   "version": "0.0.1",
   "description": "study project to implement the great board game robo-rally in JS",
   "license": "UNLICENSED",
-  "main": "server/game-server.js",
+  "main": "src/server/game-server.js",
   "scripts": {
     "wpbuild": "webpack",
     "wpdev": "webpack-dev-server",
-    "start": "webpack; node src/server/game-server.js"
+    "start": "webpack && node src/server/game-server.js"
   },
   "dependencies": {
     "express": "^4.15.2",
@@ -17,7 +17,6 @@
     "gsap": "^1.19.1",
     "helmet": "^3.5.0",
     "localtunnel": "^1.8.2",
-    "promise": "^7.1.1",
     "reconnecting-websocket": "^3.0.3"
   },
   "devDependencies": {
@@ -51,6 +50,7 @@
       "no-console": "off"
     },
     "env": {
+	  "es6": true,
       "browser": true,
       "node": true
     }
