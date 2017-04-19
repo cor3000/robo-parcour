@@ -11,7 +11,6 @@ module.exports = {
     },
     devtool: 'cheap-module-source-map',
     devServer: {
-//        publicPath: './build',
         proxy: {
             "/ws": {
                 target: "ws://localhost:8000",
@@ -38,6 +37,7 @@ module.exports = {
         }]
     },
     plugins: [
+	    /*new webpack.optimize.UglifyJsPlugin(),*/
         new CopyWebpackPlugin([
             { context: './src/client/', from: '*.html',   to: 'build/client' }, 
             { context: './src/client/', from: '**/*.css', to: 'build/client' },
