@@ -1,3 +1,5 @@
+import '../css/style.css';
+
 /* eslint-disable no-unused-vars */
 import React from './fakeReact';
 import GameConnectForm from './GameConnectForm';

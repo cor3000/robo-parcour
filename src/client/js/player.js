@@ -1,3 +1,5 @@
+import '../css/style.css';
+
 import { connectToGameAs, gameMessageHandler } from './client-connect';
 import { initCommands, renderCommands } from './player-render';
 import { div } from './render';

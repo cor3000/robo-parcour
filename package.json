@@ -29,8 +29,12 @@
     "babel-preset-es2016": "^6.24.1",
     "babel-preset-react": "^6.24.1",
     "copy-webpack-plugin": "^4.0.1",
+    "css-loader": "^0.28.0",
     "eslint": "^3.19.0",
     "eslint-loader": "^1.7.1",
+    "file-loader": "^0.11.1",
+    "style-loader": "^0.16.1",
+    "url-loader": "^0.5.8",
     "webpack": "^2.4.1",
     "webpack-dev-server": "^2.4.2"
   },
@@ -50,7 +54,7 @@
       "no-console": "off"
     },
     "env": {
-	  "es6": true,
+      "es6": true,
       "browser": true,
       "node": true
     }
