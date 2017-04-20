@@ -123,29 +123,44 @@ export function animateRespawn(robots) {
 
 export function animateLaserFire(model, shots, callback) {
     shots.forEach((shot, index) => {
-		const isWallLaser = shot.from.type === ITEM_TYPES.LASER
-		const startOffset = isWallLaser ? 0.15 : 0.5;
-        const beam = tile(`beam${index}`, shot.from.x + shot.vec.x * startOffset, shot.from.y + shot.vec.y * startOffset, 
-				'beam' + (isWallLaser ? ' beam-wall' : '')).appendTo(div(model.fieldElemId).get()).get();
+        const fx = shot.from.x;
+        const fy = shot.from.y;
+        const tx = shot.to.x;
+        const ty = shot.to.y;
+        const vx = shot.vec.x;
+        const vy = shot.vec.y;
+        
+        const isWallLaser = shot.from.TYPE === ITEM_TYPES.LASER;
+        
+        let startOffset = 0;
+        if(shot.from.TYPE === ITEM_TYPES.ROBOT) startOffset = 0.90;
+        if(isWallLaser) startOffset = 0.15;
+        let endOffset = 0;
+        if(shot.to.TYPE === ITEM_TYPES.ROBOT) endOffset = 0.5;
+        
+        const length = Math.abs((tx - fx) * vx + (ty - fy) * vy) - startOffset - endOffset + 1;
+        const startX = fx + startOffset * vx;
+        const startY = fy + startOffset * vy;
+        
+        const beam = tile(`beam${index}`, startX, startY, 'beam' + (isWallLaser ? ' beam-wall' : '')).appendTo(div(model.fieldElemId).get()).get();
 
-        const isRobot = shot.to.type === ITEM_TYPES.ROBOT;
-        const isShort = shot.distance <= (isRobot ? 1 : 0);
         TweenLite.set(beam, {
             rotation: shot.from.dir * 90,
-            scaleX: isShort ? (isRobot ? 0.5 : 0.15) : 1
+            x: (startX + length * 0.5 * vx) * tileSize,
+            y: (startY + length * 0.5 * vy) * tileSize,
+            scaleX: length
         });
         const opts = {
-            x: (shot.to.x - shot.vec.x * (isRobot ? 0.5 : (isShort ? -0.5 : 0))) * tileSize,
-            y: (shot.to.y - shot.vec.y * (isRobot ? 0.5 : (isShort ? -0.5 : 0))) * tileSize
+            opacity: 0.5
         };
         if(index === 0) {
             opts.onComplete = () => {
-                beam.parentElement.removeChild(beam);
+                //beam.parentElement.removeChild(beam);
                 callback();
             }
         } else {
             opts.onComplete = () => {
-                beam.parentElement.removeChild(beam);
+                //beam.parentElement.removeChild(beam);
             };
         }
         TweenLite.to(beam, animationDuration, opts);
