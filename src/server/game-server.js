@@ -162,12 +162,12 @@ app.ws('/ws/:gameId/:playerId', function(ws, req) {
 });
 
 //serve static resources
-app.use('/client', express.static('./build/client')); //path relative to project root
+app.use('/', express.static('./build/client')); //path relative to project root
 
 app.listen(8000, function () {
   console.log('Example app listening on port 8000');
-  console.log('http://localhost:8000/client/game.html');
-  console.log('http://localhost:8000/client/player.html');
+  console.log('http://localhost:8000/game.html');
+  console.log('http://localhost:8000/player.html');
 });
 
 /*

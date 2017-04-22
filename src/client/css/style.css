@@ -46,7 +46,7 @@ body {
 }
 
 .tile.beam {
-    background-image: url('../img/laser-red.png');
+    background-image: url('../img/laser-red-crop.png');
     background-size: 100%;
     background-repeat: no-repeat;
     background-position: center 62%;

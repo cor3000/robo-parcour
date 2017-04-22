@@ -83,7 +83,7 @@ export function animatePitDeath(robots) {
     return new Promise(resolve => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
-                scale: 0.2, opacity: 0.5, rotation: '+=720', 
+                scale: 0.2, opacity: 0.0, rotation: '+=720', 
                 onComplete: resolve
             });
         } else resolve();
@@ -94,7 +94,7 @@ export function animateEnergyDeath(robots) {
     return new Promise(resolve => {
         if(robots.length) {
             TweenLite.to(robots.map(r => div(r.id).get()), 1.5, {
-                scale: 1.5, opacity: 0.5, rotation: '+=360',
+                scale: 1.5, opacity: 0.0, rotation: '+=360',
                 onComplete: resolve
             });
         } else resolve();
@@ -121,49 +121,45 @@ export function animateRespawn(robots) {
     });
 }
 
-export function animateLaserFire(model, shots, callback) {
-    shots.forEach((shot, index) => {
-        const fx = shot.from.x;
-        const fy = shot.from.y;
-        const tx = shot.to.x;
-        const ty = shot.to.y;
-        const vx = shot.vec.x;
-        const vy = shot.vec.y;
-        
-        const isWallLaser = shot.from.TYPE === ITEM_TYPES.LASER;
-        
-        let startOffset = 0;
-        if(shot.from.TYPE === ITEM_TYPES.ROBOT) startOffset = 0.90;
-        if(isWallLaser) startOffset = 0.15;
-        let endOffset = 0;
-        if(shot.to.TYPE === ITEM_TYPES.ROBOT) endOffset = 0.5;
-        
-        const length = Math.abs((tx - fx) * vx + (ty - fy) * vy) - startOffset - endOffset + 1;
-        const startX = fx + startOffset * vx;
-        const startY = fy + startOffset * vy;
-        
-        const beam = tile(`beam${index}`, startX, startY, 'beam' + (isWallLaser ? ' beam-wall' : '')).appendTo(div(model.fieldElemId).get()).get();
+export function animateLaserFire(model, shots) {
+    return new Promise((resolve) => {
+        const anim = new TimelineLite({onComplete: resolve});
+        shots.forEach((shot, index) => {
+            const fx = shot.from.x;
+            const fy = shot.from.y;
+            const tx = shot.to.x;
+            const ty = shot.to.y;
+            const vx = shot.vec.x;
+            const vy = shot.vec.y;
+            
+            const isFromLaser = shot.from.type === ITEM_TYPES.LASER;
+            const isFromRobot = shot.from.type === ITEM_TYPES.ROBOT;
+            const isToRobot = shot.to.type === ITEM_TYPES.ROBOT;
+            
+            let startOffset = 0;
+            if(isFromRobot) startOffset = 0.90;
+            if(isFromLaser) startOffset = 0.15;
+            let endOffset = 0;
+            if(isToRobot) endOffset = 0.5;
+            
+            const length = Math.abs((tx - fx) * vx + (ty - fy) * vy) - startOffset - endOffset + 1;
+            const startX = fx + startOffset * vx;
+            const startY = fy + startOffset * vy;
+            
+            const beam = tile(`beam${index}`, startX, startY, 'beam' + (isFromLaser ? ' beam-wall' : '')).appendTo(div(model.fieldElemId).get()).get();
 
-        TweenLite.set(beam, {
-            rotation: shot.from.dir * 90,
-            x: (startX + length * 0.5 * vx) * tileSize,
-            y: (startY + length * 0.5 * vy) * tileSize,
-            scaleX: length
-        });
-        const opts = {
-            opacity: 0.5
-        };
-        if(index === 0) {
-            opts.onComplete = () => {
-                //beam.parentElement.removeChild(beam);
-                callback();
-            }
-        } else {
-            opts.onComplete = () => {
-                //beam.parentElement.removeChild(beam);
+            TweenLite.set(beam, {
+                rotation: shot.from.dir * 90,
+                x: (startX + (length * 0.5 - 0.5) * vx) * tileSize,
+                y: (startY + (length * 0.5 - 0.5) * vy) * tileSize,
+                scaleX: length
+            });
+            const opts = {
+                opacity: 0,
+                onComplete: () => { beam.parentElement.removeChild(beam); }
             };
-        }
-        TweenLite.to(beam, animationDuration, opts);
+            anim.add(TweenLite.to(beam, animationDuration, opts), NO_DELAY);
+        });
     });
 }
 

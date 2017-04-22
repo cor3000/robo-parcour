@@ -350,16 +350,18 @@ function executeProgramm(model) {
                 });
 
 			const beams = robotBeams.concat(wallBeams);
+
+
             if(beams.length > 0) {
-                animateLaserFire(model, beams, () => {
-                    //handle damage
+                const handleDamage = () => {
                     beams.filter(beam => beam.to.energy)
-                        .forEach(beam => {
-                            const target = beam.to;
-                            target.energy--;
-                        });
-                    checkEnergy(model).then(resolve);
-                });
+                        .forEach(beam => beam.to.energy--)
+                };
+
+                animateLaserFire(model, beams)
+                    .then(handleDamage)
+                    .then(() => checkEnergy(model))
+                    .then(resolve);
             } else {
                 resolve();
             }
